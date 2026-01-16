@@ -46,3 +46,21 @@ export function useAddSequenceStep(sequenceId: string) {
     subject?: string;
   }>(`/api/sequences/${sequenceId}`, 'POST');
 }
+
+export function useUpdateSequenceStep(sequenceId: string, stepId: string) {
+  return useMutation<SequenceStep, {
+    type?: 'email' | 'linkedin' | 'task' | 'wait';
+    delay_days?: number;
+    template_id?: string;
+    content?: string;
+    subject?: string;
+    order?: number;
+  }>(`/api/sequences/${sequenceId}/steps/${stepId}`, 'PATCH');
+}
+
+export function useDeleteSequenceStep(sequenceId: string, stepId: string) {
+  return useMutation<{ deleted: boolean }>(
+    `/api/sequences/${sequenceId}/steps/${stepId}`,
+    'DELETE'
+  );
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Plus, Play, Pause, Settings } from 'lucide-react';
 import { useSequence, useUpdateSequence, useAddSequenceStep } from '@/hooks';
 import { SequenceStepCard } from './sequence-step-card';
@@ -23,11 +23,26 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
   const { mutate: updateSequence, isLoading: isUpdating } = useUpdateSequence(sequenceId);
   const { mutate: addStep, isLoading: isAddingStep } = useAddSequenceStep(sequenceId);
 
+  // Add step modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newStepType, setNewStepType] = useState<StepType>('email');
   const [newStepDelay, setNewStepDelay] = useState('0');
   const [newStepSubject, setNewStepSubject] = useState('');
   const [newStepContent, setNewStepContent] = useState('');
+
+  // Edit step modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingStep, setEditingStep] = useState<SequenceStep | null>(null);
+  const [editStepType, setEditStepType] = useState<StepType>('email');
+  const [editStepDelay, setEditStepDelay] = useState('0');
+  const [editStepSubject, setEditStepSubject] = useState('');
+  const [editStepContent, setEditStepContent] = useState('');
+  const [isEditingSaving, setIsEditingSaving] = useState(false);
+
+  // Delete confirmation state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingStep, setDeletingStep] = useState<SequenceStep | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   if (isLoading) return <LoadingPage />;
   if (error) return <ErrorState error={error} onRetry={refetch} />;
@@ -67,14 +82,71 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
     }
   };
 
-  const handleEditStep = (step: SequenceStep) => {
-    // TODO: Open edit modal
-    console.log('Edit step:', step);
+  const handleEditStep = useCallback((step: SequenceStep) => {
+    setEditingStep(step);
+    setEditStepType(step.type);
+    setEditStepDelay(String(step.delay_days || 0));
+    setEditStepSubject(step.subject || '');
+    setEditStepContent(step.content || '');
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleSaveEdit = async () => {
+    if (!editingStep) return;
+
+    setIsEditingSaving(true);
+    try {
+      const response = await fetch(`/api/sequences/${sequenceId}/steps/${editingStep.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: editStepType,
+          delay_days: parseInt(editStepDelay, 10) || 0,
+          subject: editStepSubject || null,
+          content: editStepContent || null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update step');
+      }
+
+      setIsEditModalOpen(false);
+      setEditingStep(null);
+      refetch();
+    } catch (err) {
+      console.error('Error updating step:', err);
+    } finally {
+      setIsEditingSaving(false);
+    }
   };
 
-  const handleDeleteStep = (step: SequenceStep) => {
-    // TODO: Confirm and delete
-    console.log('Delete step:', step);
+  const handleDeleteStep = useCallback((step: SequenceStep) => {
+    setDeletingStep(step);
+    setIsDeleteModalOpen(true);
+  }, []);
+
+  const handleConfirmDelete = async () => {
+    if (!deletingStep) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/sequences/${sequenceId}/steps/${deletingStep.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete step');
+      }
+
+      setIsDeleteModalOpen(false);
+      setDeletingStep(null);
+      refetch();
+    } catch (err) {
+      console.error('Error deleting step:', err);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const statusColor = 
@@ -196,6 +268,90 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
           </Button>
           <Button variant="primary" onClick={handleAddStep} isLoading={isAddingStep}>
             Add Step
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Edit Step Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Step"
+        size="md"
+      >
+        <div className="space-y-4">
+          <Select
+            label="Step Type"
+            options={stepTypeOptions}
+            value={editStepType}
+            onChange={(e) => setEditStepType(e.target.value as StepType)}
+          />
+
+          <Input
+            label="Delay (days)"
+            type="number"
+            min="0"
+            value={editStepDelay}
+            onChange={(e) => setEditStepDelay(e.target.value)}
+            helperText="Days to wait before this step"
+          />
+
+          {(editStepType === 'email') && (
+            <Input
+              label="Subject"
+              placeholder="Email subject line"
+              value={editStepSubject}
+              onChange={(e) => setEditStepSubject(e.target.value)}
+            />
+          )}
+
+          {(editStepType === 'email' || editStepType === 'linkedin' || editStepType === 'task') && (
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                {editStepType === 'task' ? 'Task Description' : 'Content'}
+              </label>
+              <textarea
+                className="w-full px-3 py-2 bg-dark-700 border border-dark-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-transparent resize-none"
+                rows={4}
+                placeholder={
+                  editStepType === 'email' ? 'Email body (use {{variables}} for personalization)' :
+                  editStepType === 'linkedin' ? 'LinkedIn message' :
+                  'Describe the task'
+                }
+                value={editStepContent}
+                onChange={(e) => setEditStepContent(e.target.value)}
+              />
+            </div>
+          )}
+        </div>
+
+        <ModalFooter>
+          <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSaveEdit} isLoading={isEditingSaving}>
+            Save Changes
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Step"
+        size="sm"
+      >
+        <p className="text-gray-300">
+          Are you sure you want to delete this step? This action cannot be undone.
+        </p>
+
+        <ModalFooter>
+          <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={handleConfirmDelete} isLoading={isDeleting}>
+            Delete Step
           </Button>
         </ModalFooter>
       </Modal>
