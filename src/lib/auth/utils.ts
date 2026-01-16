@@ -24,7 +24,7 @@ const DEMO_USER: AuthUser = {
  */
 export async function requireAuth(): Promise<AuthUser> {
   // Demo mode - return demo user
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || true; // Default to demo
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || true;
   if (isDemoMode) {
     return DEMO_USER;
   }

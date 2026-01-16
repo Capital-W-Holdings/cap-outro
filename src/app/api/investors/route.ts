@@ -34,8 +34,7 @@ export async function GET(request: NextRequest) {
 
     const supabase = createServiceClient();
 
-    // Build query - show platform investors OR user's own investors
-    // In demo mode, show all investors
+    // Build query - show all investors in demo mode
     const isDemoMode = user.id === 'demo-user-id';
     let query = supabase
       .from('investors')
@@ -46,18 +45,15 @@ export async function GET(request: NextRequest) {
       query = query.or(`is_platform.eq.true,user_id.eq.${user.id}`);
     }
 
-    // Filter by contact method - default to showing all investors
+    // Filter by contact method
     if (contactMethod === 'email') {
-      // Only investors with personal email
       query = query.not('email', 'is', null);
     } else if (contactMethod === 'linkedin') {
-      // Only investors with LinkedIn
       query = query.not('linkedin_url', 'is', null);
     } else if (contactMethod === 'both') {
-      // Investors with both email and LinkedIn
       query = query.not('email', 'is', null).not('linkedin_url', 'is', null);
     }
-    // Default (including 'all'): show all investors
+    // Default: show all investors
 
     // Apply search filter
     if (search) {
