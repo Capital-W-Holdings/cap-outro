@@ -35,10 +35,17 @@ export async function GET(request: NextRequest) {
     const supabase = createServiceClient();
 
     // Build query - show platform investors OR user's own investors
+    // In demo mode, show all platform investors
+    const isDemoMode = user.id === 'demo-user-id';
     let query = supabase
       .from('investors')
-      .select('*', { count: 'exact' })
-      .or(`is_platform.eq.true,user_id.eq.${user.id}`);
+      .select('*', { count: 'exact' });
+
+    if (isDemoMode) {
+      query = query.eq('is_platform', true);
+    } else {
+      query = query.or(`is_platform.eq.true,user_id.eq.${user.id}`);
+    }
 
     // Filter by contact method - default to only showing investors with real contact info
     if (contactMethod === 'email') {

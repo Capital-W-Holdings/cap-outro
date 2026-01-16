@@ -9,15 +9,30 @@ export interface AuthUser {
   name: string;
 }
 
+// Demo user for demo mode
+const DEMO_USER: AuthUser = {
+  id: 'demo-user-id',
+  email: 'demo@capoutro.com',
+  orgId: 'demo-org-id',
+  role: 'admin',
+  name: 'Demo User',
+};
+
 /**
  * Get the current authenticated user from the session
  * Throws UnauthorizedError if not authenticated
  */
 export async function requireAuth(): Promise<AuthUser> {
+  // Demo mode - return demo user
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || true; // Default to demo
+  if (isDemoMode) {
+    return DEMO_USER;
+  }
+
   const supabase = await createServerSupabaseClient();
-  
+
   const { data: { user }, error: authError } = await supabase.auth.getUser();
-  
+
   if (authError || !user) {
     throw new UnauthorizedError('Not authenticated');
   }
