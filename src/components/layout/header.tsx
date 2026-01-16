@@ -1,8 +1,6 @@
 'use client';
 
 import { Bell, Search, Plus, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 interface HeaderProps {
@@ -16,10 +14,10 @@ interface HeaderProps {
   onSearch?: (query: string) => void;
 }
 
-export function Header({ 
-  title, 
-  subtitle, 
-  action, 
+export function Header({
+  title,
+  subtitle,
+  action,
   showSearch = false,
   onSearch,
 }: HeaderProps) {
@@ -31,12 +29,12 @@ export function Header({
   };
 
   return (
-    <header className="h-16 border-b border-dark-600 bg-dark-800 px-6 flex items-center justify-between">
+    <header className="h-16 border-b border-neutral-200 bg-white px-6 flex items-center justify-between">
       {/* Left: Title */}
       <div>
-        <h1 className="text-xl font-semibold text-white">{title}</h1>
+        <h1 className="text-xl font-semibold text-neutral-900 font-mono">{title}</h1>
         {subtitle && (
-          <p className="text-sm text-gray-400">{subtitle}</p>
+          <p className="text-sm text-neutral-500">{subtitle}</p>
         )}
       </div>
 
@@ -44,13 +42,13 @@ export function Header({
       {showSearch && (
         <form onSubmit={handleSearch} className="flex-1 max-w-md mx-8">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-            <Input
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            <input
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-dark-700 border-dark-500"
+              className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-md text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
             />
           </div>
         </form>
@@ -59,25 +57,25 @@ export function Header({
       {/* Right: Actions */}
       <div className="flex items-center gap-3">
         {action && (
-          <Button 
-            variant="primary" 
+          <button
             onClick={action.onClick}
-            leftIcon={<Plus className="w-4 h-4" />}
+            className="flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white font-medium rounded-md hover:bg-neutral-800 transition-colors"
           >
+            <Plus className="w-4 h-4" />
             {action.label}
-          </Button>
+          </button>
         )}
 
         {/* Notifications */}
-        <button className="relative p-2 text-gray-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors">
+        <button className="relative p-2 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-md transition-colors">
           <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-gold rounded-full" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-neutral-900 rounded-full" />
         </button>
 
         {/* User Menu */}
-        <button className="flex items-center gap-2 p-2 text-gray-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors">
-          <div className="w-8 h-8 rounded-full bg-dark-600 flex items-center justify-center">
-            <User className="w-4 h-4" />
+        <button className="flex items-center gap-2 p-2 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-md transition-colors">
+          <div className="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center">
+            <User className="w-4 h-4 text-neutral-600" />
           </div>
         </button>
       </div>

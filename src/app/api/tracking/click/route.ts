@@ -1,10 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Allowed domains for redirect URLs to prevent open redirect attacks
+const ALLOWED_DOMAINS = [
+  'linkedin.com',
+  'www.linkedin.com',
+  'calendly.com',
+  'twitter.com',
+  'x.com',
+  'github.com',
+  'docs.google.com',
+  'drive.google.com',
+  'notion.so',
+  'airtable.com',
+  'zoom.us',
+];
+
+function isAllowedUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString);
+    // Allow HTTPS only
+    if (url.protocol !== 'https:') {
+      return false;
+    }
+    // Check if hostname matches allowed domains
+    return ALLOWED_DOMAINS.some(domain =>
+      url.hostname === domain || url.hostname.endsWith('.' + domain)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const trackingId = request.nextUrl.searchParams.get('id');
   const targetUrl = request.nextUrl.searchParams.get('url');
 
   if (!targetUrl) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // Validate URL to prevent open redirect attacks
+  if (!isAllowedUrl(targetUrl)) {
+    console.warn(`⚠️ Blocked redirect to untrusted URL: ${targetUrl}`);
     return NextResponse.redirect(new URL('/', request.url));
   }
 
@@ -14,15 +51,15 @@ export async function GET(request: NextRequest) {
     // const supabase = createServiceClient();
     // await supabase
     //   .from('outreach')
-    //   .update({ 
+    //   .update({
     //     status: 'clicked',
-    //     clicked_at: new Date().toISOString() 
+    //     clicked_at: new Date().toISOString()
     //   })
     //   .eq('tracking_id', trackingId);
 
     console.log(`🔗 Link clicked: ${trackingId} -> ${targetUrl}`);
   }
 
-  // Redirect to original URL
+  // Redirect to validated URL
   return NextResponse.redirect(targetUrl);
 }

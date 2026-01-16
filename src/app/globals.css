@@ -1,16 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-gold: #C9A962;
-  --color-brand-gold-light: #D4B978;
-  --color-brand-gold-dark: #A88B4A;
-  --color-dark-900: #0A0A0A;
-  --color-dark-800: #121212;
-  --color-dark-700: #1A1A1A;
-  --color-dark-600: #242424;
-  --color-dark-500: #2E2E2E;
-  
   --font-family-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-mono: "Space Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
 html {
@@ -18,10 +10,11 @@ html {
 }
 
 body {
-  background-color: var(--color-dark-900);
-  color: white;
+  background-color: #ffffff;
+  color: #171717;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-family-sans);
 }
 
 /* Custom scrollbar */
@@ -30,16 +23,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background-color: var(--color-dark-800);
+  background-color: #f5f5f5;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--color-dark-600);
+  background-color: #d4d4d4;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-dark-500);
+  background-color: #a3a3a3;
 }
 
 /* Animations */
@@ -58,6 +51,6 @@ body {
   animation: animateIn 0.3s ease-out;
 }
 
-.slide-in-from-bottom-2 {
-  --tw-enter-translate-y: 0.5rem;
+.font-mono {
+  font-family: var(--font-family-mono);
 }

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button, Input, Card } from '@/components/ui';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,80 +16,88 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
 
-    // TODO: Implement actual Supabase auth
-    // For MVP demo, just redirect to dashboard
     try {
-      // Simulate auth delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // In production:
-      // const supabase = createClient();
-      // const { error } = await supabase.auth.signInWithPassword({ email, password });
-      // if (error) throw error;
+      // Call login API to set secure HttpOnly cookie
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
 
-      router.push('/campaigns');
+      if (!response.ok) {
+        throw new Error('Failed to sign in');
+      }
+
+      // Redirect to dashboard
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect') || '/campaigns';
+      router.push(redirect);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in');
-    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Card padding="lg">
+    <div className="bg-white border border-neutral-200 rounded-lg p-8 w-full max-w-md">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-white">Welcome back</h1>
-        <p className="text-gray-400 mt-2">Sign in to your account</p>
+        <h1 className="text-2xl font-semibold text-neutral-900 font-mono">Welcome back</h1>
+        <p className="text-neutral-500 mt-2">Sign in to your account</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          label="Email"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={isLoading}
-          required
-        />
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+          <input
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
+            required
+            className="w-full px-3 py-2 border border-neutral-300 rounded-md text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+          />
+        </div>
 
-        <Input
-          label="Password"
-          type="password"
-          placeholder="••••••••"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={isLoading}
-          required
-        />
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-1">Password</label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
+            required
+            className="w-full px-3 py-2 border border-neutral-300 rounded-md text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+          />
+        </div>
 
         {error && (
-          <p className="text-sm text-red-500">{error}</p>
+          <p className="text-sm text-red-600">{error}</p>
         )}
 
-        <Button
+        <button
           type="submit"
-          variant="primary"
-          isLoading={isLoading}
-          className="w-full"
+          disabled={isLoading}
+          className="w-full py-2 px-4 bg-neutral-900 text-white font-medium rounded-md hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          Sign in
-        </Button>
+          {isLoading ? 'Signing in...' : 'Sign in'}
+        </button>
       </form>
 
       <div className="mt-6 text-center text-sm">
-        <span className="text-gray-400">Don&apos;t have an account? </span>
-        <Link href="/signup" className="text-brand-gold hover:underline">
+        <span className="text-neutral-500">Don&apos;t have an account? </span>
+        <Link href="/signup" className="text-neutral-900 font-medium hover:underline">
           Sign up
         </Link>
       </div>
 
       {/* Demo notice */}
-      <div className="mt-8 p-3 bg-dark-700 rounded-lg text-center">
-        <p className="text-xs text-gray-400">
-          <span className="text-brand-gold">Demo Mode:</span> Enter any email/password to continue
+      <div className="mt-8 p-3 bg-neutral-50 border border-neutral-200 rounded-md text-center">
+        <p className="text-xs text-neutral-500">
+          <span className="font-medium text-neutral-700">Demo Mode:</span> Enter any email/password to continue
         </p>
       </div>
-    </Card>
+    </div>
   );
 }

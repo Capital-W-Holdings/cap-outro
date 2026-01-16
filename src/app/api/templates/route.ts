@@ -1,91 +1,43 @@
 import { NextRequest } from 'next/server';
-import { 
-  successResponse, 
+import {
+  successResponse,
   withErrorHandling,
   parseBody,
+  AppError,
 } from '@/lib/api/utils';
 import { validateCreateTemplate } from '@/lib/api/validators';
 import { extractTemplateVariables } from '@/lib/email';
-import type { EmailTemplate, TemplateType } from '@/types';
+import { createServiceClient } from '@/lib/supabase/server';
+import type { TemplateType } from '@/types';
 
-// Mock data for MVP
-const mockTemplates: EmailTemplate[] = [
-  {
-    id: '1',
-    org_id: 'org-1',
-    name: 'Cold Outreach - Series A',
-    subject: 'Quick intro - {{company_name}}',
-    body: `<p>Hi {{investor_first_name}},</p>
-
-<p>I'm {{founder_name}}, founder of {{company_name}}. We're raising a {{raise_type}} round and I thought you might be interested given your focus on {{investor_sectors}}.</p>
-
-<p>Quick highlights:</p>
-<ul>
-  <li>{{key_metric_1}}</li>
-  <li>{{key_metric_2}}</li>
-  <li>{{key_metric_3}}</li>
-</ul>
-
-<p>Would love to share our deck and get 15 minutes on your calendar. Here's my availability: {{calendar_link}}</p>
-
-<p>Best,<br>{{founder_name}}</p>`,
-    variables: ['investor_first_name', 'founder_name', 'company_name', 'raise_type', 'investor_sectors', 'key_metric_1', 'key_metric_2', 'key_metric_3', 'calendar_link'],
-    type: 'initial',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    org_id: 'org-1',
-    name: 'Follow-up #1',
-    subject: 'Re: Quick intro - {{company_name}}',
-    body: `<p>Hi {{investor_first_name}},</p>
-
-<p>Just following up on my email from last week. I know you're busy, but I'd love to get {{company_name}} on your radar.</p>
-
-<p>We just hit a big milestone - {{recent_milestone}}. Would be great to share more.</p>
-
-<p>Here's the deck if you'd like to take a look: {{deck_url}}</p>
-
-<p>Best,<br>{{founder_name}}</p>`,
-    variables: ['investor_first_name', 'company_name', 'recent_milestone', 'deck_url', 'founder_name'],
-    type: 'followup',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    org_id: 'org-1',
-    name: 'Warm Intro Request',
-    subject: 'Intro request: {{company_name}} <> {{investor_name}}',
-    body: `<p>Hi {{connection_name}},</p>
-
-<p>Hope you're doing well! I'm reaching out because I noticed you're connected with {{investor_name}} at {{investor_firm}}.</p>
-
-<p>We're currently raising our {{raise_type}} and I think {{company_name}} would be a great fit for their portfolio. Would you be willing to make a warm intro?</p>
-
-<p>Happy to send over a blurb you can forward, or jump on a quick call to give you the full pitch first.</p>
-
-<p>Thanks so much!<br>{{founder_name}}</p>`,
-    variables: ['connection_name', 'investor_name', 'investor_firm', 'raise_type', 'company_name', 'founder_name'],
-    type: 'intro_request',
-    created_at: new Date().toISOString(),
-  },
-];
+const DEMO_ORG_ID = '00000000-0000-0000-0000-000000000001';
 
 // GET /api/templates - List templates
 export async function GET(request: NextRequest) {
   return withErrorHandling(async () => {
+    const supabase = createServiceClient();
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type') as TemplateType | null;
 
-    let filtered = mockTemplates;
+    let query = supabase
+      .from('email_templates')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false });
+
     if (type) {
-      filtered = mockTemplates.filter((t) => t.type === type);
+      query = query.eq('type', type);
     }
 
-    return successResponse(filtered, {
+    const { data, error, count } = await query;
+
+    if (error) {
+      throw new AppError('INTERNAL_ERROR', error.message);
+    }
+
+    return successResponse(data ?? [], {
       page: 1,
       limit: 50,
-      total: filtered.length,
+      total: count ?? 0,
     });
   });
 }
@@ -93,24 +45,29 @@ export async function GET(request: NextRequest) {
 // POST /api/templates - Create template
 export async function POST(request: NextRequest) {
   return withErrorHandling(async () => {
+    const supabase = createServiceClient();
     const body = await parseBody(request, validateCreateTemplate);
 
     // Extract variables from the template
     const variables = extractTemplateVariables(body.subject + ' ' + body.body);
 
-    const newTemplate: EmailTemplate = {
-      id: `tpl-${Date.now()}`,
-      org_id: 'org-1',
-      name: body.name,
-      subject: body.subject,
-      body: body.body,
-      variables,
-      type: body.type ?? 'initial',
-      created_at: new Date().toISOString(),
-    };
+    const { data, error } = await supabase
+      .from('email_templates')
+      .insert({
+        org_id: DEMO_ORG_ID,
+        name: body.name,
+        subject: body.subject,
+        body: body.body,
+        variables,
+        type: body.type ?? 'initial',
+      })
+      .select()
+      .single();
 
-    mockTemplates.push(newTemplate);
+    if (error) {
+      throw new AppError('INTERNAL_ERROR', error.message);
+    }
 
-    return successResponse(newTemplate);
+    return successResponse(data);
   });
 }

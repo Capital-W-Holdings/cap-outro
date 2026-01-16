@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Send, Clock } from 'lucide-react';
 import { Modal, ModalFooter, Button, Input, Select, type SelectOption } from '@/components/ui';
 import { useTemplates, useCreateOutreach } from '@/hooks';
@@ -31,17 +31,17 @@ export function ComposeEmailModal({
   const { data: templates } = useTemplates();
   const { mutate: createOutreach, isLoading: isSending, error } = useCreateOutreach();
 
-  // Build template variables
-  const variables: TemplateVariables = {
+  // Build template variables - memoized to avoid unnecessary re-renders
+  const variables: TemplateVariables = useMemo(() => ({
     investor_name: investor.name,
     investor_first_name: investor.name.split(' ')[0],
     investor_firm: investor.firm ?? undefined,
     company_name: campaign.name.replace(' Raise', ''), // Simple extraction
     raise_type: campaign.raise_type ?? undefined,
-    raise_amount: campaign.raise_amount 
-      ? `$${(campaign.raise_amount / 1000000).toFixed(1)}M` 
+    raise_amount: campaign.raise_amount
+      ? `$${(campaign.raise_amount / 1000000).toFixed(1)}M`
       : undefined,
-  };
+  }), [investor.name, investor.firm, campaign.name, campaign.raise_type, campaign.raise_amount]);
 
   // Apply template when selected
   useEffect(() => {
@@ -52,7 +52,7 @@ export function ComposeEmailModal({
         setContent(interpolateTemplate(template.body, variables));
       }
     }
-  }, [selectedTemplateId, templates]);
+  }, [selectedTemplateId, templates, variables]);
 
   const templateOptions: SelectOption[] = [
     { value: '', label: 'Select a template...' },

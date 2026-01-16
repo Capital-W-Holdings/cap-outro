@@ -32,6 +32,20 @@ export const createInvestorSchema = z.object({
   sectors: z.array(z.string()).optional(),
 });
 
+export const updateInvestorSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  email: z.string().email('Invalid email').optional().or(z.literal('')).or(z.null()),
+  firm: z.string().max(100).optional().or(z.null()),
+  title: z.string().max(100).optional().or(z.null()),
+  linkedin_url: z.string().url('Invalid URL').optional().or(z.literal('')).or(z.null()),
+  check_size_min: z.number().positive().optional().or(z.null()),
+  check_size_max: z.number().positive().optional().or(z.null()),
+  stages: z.array(z.string()).optional(),
+  sectors: z.array(z.string()).optional(),
+  fit_score: z.number().min(0).max(100).optional().or(z.null()),
+  notes: z.string().max(5000).optional().or(z.null()),
+});
+
 export const bulkImportSchema = z.object({
   investors: z.array(
     z.object({
@@ -93,6 +107,7 @@ export function createValidator<T>(schema: z.ZodSchema<T>) {
 export const validateCreateCampaign = createValidator(createCampaignSchema);
 export const validateUpdateCampaign = createValidator(updateCampaignSchema);
 export const validateCreateInvestor = createValidator(createInvestorSchema);
+export const validateUpdateInvestor = createValidator(updateInvestorSchema);
 export const validateBulkImport = createValidator(bulkImportSchema);
 export const validateUpdatePipeline = createValidator(updatePipelineSchema);
 export const validateCreateTemplate = createValidator(createTemplateSchema);
@@ -101,6 +116,7 @@ export const validateCreateTemplate = createValidator(createTemplateSchema);
 export type CreateCampaignInput = z.infer<typeof createCampaignSchema>;
 export type UpdateCampaignInput = z.infer<typeof updateCampaignSchema>;
 export type CreateInvestorInput = z.infer<typeof createInvestorSchema>;
+export type UpdateInvestorInput = z.infer<typeof updateInvestorSchema>;
 export type BulkImportInput = z.infer<typeof bulkImportSchema>;
 export type UpdatePipelineInput = z.infer<typeof updatePipelineSchema>;
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>;

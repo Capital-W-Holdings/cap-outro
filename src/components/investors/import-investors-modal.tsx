@@ -123,14 +123,14 @@ export function ImportInvestorsModal({ isOpen, onClose, onSuccess }: ImportInves
       {result ? (
         // Success state
         <div className="text-center py-8">
-          <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-400" />
+          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">Import Complete</h3>
-          <p className="text-gray-400">
+          <h3 className="text-xl font-semibold text-neutral-900 mb-2">Import Complete</h3>
+          <p className="text-neutral-600">
             Successfully imported {result.imported} investor{result.imported !== 1 ? 's' : ''}.
             {result.errors > 0 && (
-              <span className="text-yellow-400"> ({result.errors} failed)</span>
+              <span className="text-amber-600"> ({result.errors} failed)</span>
             )}
           </p>
           <Button variant="primary" onClick={handleClose} className="mt-6">
@@ -143,15 +143,15 @@ export function ImportInvestorsModal({ isOpen, onClose, onSuccess }: ImportInves
           <div
             className={`
               border-2 border-dashed rounded-xl p-8 text-center transition-colors
-              ${file ? 'border-brand-gold bg-brand-gold/5' : 'border-dark-500 hover:border-dark-400'}
+              ${file ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-300 hover:border-neutral-400'}
             `}
           >
             {file ? (
               <div className="flex items-center justify-center gap-3">
-                <FileText className="w-8 h-8 text-brand-gold" />
+                <FileText className="w-8 h-8 text-neutral-900" />
                 <div className="text-left">
-                  <p className="text-white font-medium">{file.name}</p>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-neutral-900 font-medium">{file.name}</p>
+                  <p className="text-sm text-neutral-500">
                     {parsed.length} investor{parsed.length !== 1 ? 's' : ''} found
                   </p>
                 </div>
@@ -161,17 +161,17 @@ export function ImportInvestorsModal({ isOpen, onClose, onSuccess }: ImportInves
                     setParsed([]);
                     setParseError(null);
                   }}
-                  className="p-1 text-gray-400 hover:text-white"
+                  className="p-1 text-neutral-400 hover:text-neutral-900"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             ) : (
               <>
-                <Upload className="w-10 h-10 text-gray-500 mx-auto mb-3" />
+                <Upload className="w-10 h-10 text-neutral-400 mx-auto mb-3" />
                 <label className="cursor-pointer">
-                  <span className="text-brand-gold hover:underline">Choose a CSV file</span>
-                  <span className="text-gray-400"> or drag and drop</span>
+                  <span className="text-neutral-900 font-medium hover:underline">Choose a CSV file</span>
+                  <span className="text-neutral-500"> or drag and drop</span>
                   <input
                     type="file"
                     accept=".csv"
@@ -179,7 +179,7 @@ export function ImportInvestorsModal({ isOpen, onClose, onSuccess }: ImportInves
                     className="hidden"
                   />
                 </label>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-neutral-500 mt-2">
                   Columns: name (required), email, firm, title, linkedin_url
                 </p>
               </>
@@ -197,13 +197,13 @@ export function ImportInvestorsModal({ isOpen, onClose, onSuccess }: ImportInves
           {/* Preview */}
           {parsed.length > 0 && (
             <div className="mt-4">
-              <p className="text-sm text-gray-400 mb-2">Preview (first 5):</p>
-              <div className="bg-dark-700 rounded-lg p-3 max-h-40 overflow-auto">
+              <p className="text-sm text-neutral-500 mb-2">Preview (first 5):</p>
+              <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-3 max-h-40 overflow-auto">
                 {parsed.slice(0, 5).map((inv, idx) => (
-                  <div key={idx} className="flex items-center gap-4 py-1.5 border-b border-dark-600 last:border-0">
-                    <span className="text-white font-medium">{inv.name}</span>
-                    {inv.firm && <span className="text-gray-400 text-sm">{inv.firm}</span>}
-                    {inv.email && <span className="text-gray-500 text-sm">{inv.email}</span>}
+                  <div key={idx} className="flex items-center gap-4 py-1.5 border-b border-neutral-200 last:border-0">
+                    <span className="text-neutral-900 font-medium">{inv.name}</span>
+                    {inv.firm && <span className="text-neutral-600 text-sm">{inv.firm}</span>}
+                    {inv.email && <span className="text-neutral-500 text-sm">{inv.email}</span>}
                   </div>
                 ))}
               </div>

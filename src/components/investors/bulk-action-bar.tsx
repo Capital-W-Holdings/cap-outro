@@ -24,19 +24,19 @@ export function BulkActionBar({
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-      <div className="bg-dark-800 border border-dark-500 rounded-xl shadow-xl px-4 py-3 flex items-center gap-4">
+      <div className="bg-white border border-neutral-200 rounded-xl shadow-xl px-4 py-3 flex items-center gap-4">
         {/* Selection Count */}
         <div className="flex items-center gap-2">
-          <span className="w-8 h-8 rounded-full bg-brand-gold flex items-center justify-center text-dark-900 font-bold text-sm">
+          <span className="w-8 h-8 rounded-full bg-neutral-900 flex items-center justify-center text-white font-bold text-sm">
             {selectedCount}
           </span>
-          <span className="text-sm text-gray-300">
+          <span className="text-sm text-neutral-600">
             {selectedCount === 1 ? 'investor' : 'investors'} selected
           </span>
         </div>
 
         {/* Divider */}
-        <div className="h-6 w-px bg-dark-500" />
+        <div className="h-6 w-px bg-neutral-200" />
 
         {/* Actions */}
         <div className="flex items-center gap-2">
@@ -50,7 +50,7 @@ export function BulkActionBar({
               Add to Campaign
             </Button>
           )}
-          
+
           {onSendEmail && (
             <Button
               variant="secondary"
@@ -78,7 +78,7 @@ export function BulkActionBar({
               variant="outline"
               size="sm"
               onClick={onDelete}
-              className="text-red-400 border-red-400/30 hover:bg-red-400/10"
+              className="text-red-600 border-red-300 hover:bg-red-50"
               leftIcon={<Trash2 className="w-4 h-4" />}
             >
               Delete
@@ -89,7 +89,7 @@ export function BulkActionBar({
         {/* Clear Selection */}
         <button
           onClick={onClearSelection}
-          className="p-1 text-gray-500 hover:text-white hover:bg-dark-600 rounded transition-colors"
+          className="p-1 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded transition-colors"
           title="Clear selection"
         >
           <X className="w-4 h-4" />
