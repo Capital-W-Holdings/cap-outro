@@ -1,30 +1,13 @@
 import { NextRequest } from 'next/server';
-import { 
-  successResponse, 
+import {
+  successResponse,
   withErrorHandling,
   parseBody,
   ValidationError,
+  AppError,
 } from '@/lib/api/utils';
-import type { Sequence } from '@/types';
+import { createServiceClient } from '@/lib/supabase/server';
 import { z } from 'zod';
-
-// Mock data for MVP
-const mockSequences: Sequence[] = [
-  {
-    id: '1',
-    campaign_id: '1',
-    name: 'Initial Outreach',
-    status: 'active',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    campaign_id: '1',
-    name: 'Follow-up Sequence',
-    status: 'draft',
-    created_at: new Date().toISOString(),
-  },
-];
 
 const createSequenceSchema = z.object({
   campaign_id: z.string().uuid('Invalid campaign ID'),
@@ -48,18 +31,29 @@ function validateCreateSequence(data: unknown) {
 // GET /api/sequences - List sequences (optionally filtered by campaign)
 export async function GET(request: NextRequest) {
   return withErrorHandling(async () => {
+    const supabase = createServiceClient();
     const searchParams = request.nextUrl.searchParams;
     const campaignId = searchParams.get('campaign_id');
 
-    let filtered = mockSequences;
+    let query = supabase
+      .from('sequences')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false });
+
     if (campaignId) {
-      filtered = mockSequences.filter((s) => s.campaign_id === campaignId);
+      query = query.eq('campaign_id', campaignId);
     }
 
-    return successResponse(filtered, {
+    const { data, error, count } = await query;
+
+    if (error) {
+      throw new AppError('INTERNAL_ERROR', error.message);
+    }
+
+    return successResponse(data ?? [], {
       page: 1,
       limit: 20,
-      total: filtered.length,
+      total: count ?? 0,
     });
   });
 }
@@ -67,18 +61,23 @@ export async function GET(request: NextRequest) {
 // POST /api/sequences - Create a new sequence
 export async function POST(request: NextRequest) {
   return withErrorHandling(async () => {
+    const supabase = createServiceClient();
     const body = await parseBody(request, validateCreateSequence);
 
-    const newSequence: Sequence = {
-      id: `seq-${Date.now()}`,
-      campaign_id: body.campaign_id,
-      name: body.name,
-      status: 'draft',
-      created_at: new Date().toISOString(),
-    };
+    const { data, error } = await supabase
+      .from('sequences')
+      .insert({
+        campaign_id: body.campaign_id,
+        name: body.name,
+        status: 'draft',
+      })
+      .select()
+      .single();
 
-    mockSequences.push(newSequence);
+    if (error) {
+      throw new AppError('INTERNAL_ERROR', error.message);
+    }
 
-    return successResponse(newSequence);
+    return successResponse(data);
   });
 }

@@ -24,7 +24,7 @@ const statusOptions: SelectOption[] = [
 
 export function OutreachList({ campaignId, investorId }: OutreachListProps) {
   const [statusFilter, setStatusFilter] = useState<OutreachStatus | ''>('');
-  
+
   const { data: outreach, isLoading, error, refetch } = useOutreach({
     campaign_id: campaignId,
     investor_id: investorId,
@@ -55,10 +55,10 @@ export function OutreachList({ campaignId, investorId }: OutreachListProps) {
           onChange={(e) => setStatusFilter(e.target.value as OutreachStatus | '')}
           className="w-48"
         />
-        
+
         <div className="flex-1" />
-        
-        <div className="text-sm text-gray-400">
+
+        <div className="text-sm text-neutral-600">
           {outreach?.length ?? 0} outreach{outreach?.length !== 1 ? '' : ''}
         </div>
       </div>
@@ -66,7 +66,7 @@ export function OutreachList({ campaignId, investorId }: OutreachListProps) {
       {/* List */}
       {!outreach || outreach.length === 0 ? (
         <EmptyState
-          icon={<Mail className="w-8 h-8 text-gray-500" />}
+          icon={<Mail className="w-8 h-8 text-neutral-400" />}
           title="No outreach found"
           description={statusFilter ? 'Try changing your filters' : 'Create a sequence to start outreach'}
         />

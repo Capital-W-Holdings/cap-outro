@@ -1,78 +1,44 @@
 import { NextRequest } from 'next/server';
-import { 
-  successResponse, 
+import {
+  successResponse,
   withErrorHandling,
   parseBody,
+  AppError,
 } from '@/lib/api/utils';
 import { validateCreateInvestor } from '@/lib/api/validators';
-import type { Investor } from '@/types';
+import { createServiceClient } from '@/lib/supabase/server';
 
-// Mock data for MVP
-const mockInvestors: Investor[] = [
-  {
-    id: '1',
-    org_id: 'org-1',
-    name: 'Sarah Chen',
-    email: 'sarah@acme.vc',
-    firm: 'Acme Ventures',
-    title: 'Partner',
-    linkedin_url: 'https://linkedin.com/in/sarahchen',
-    check_size_min: 500000,
-    check_size_max: 2000000,
-    stages: ['seed', 'series_a'],
-    sectors: ['fintech', 'ai'],
-    fit_score: 85,
-    warm_paths: [],
-    source: 'manual',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    org_id: 'org-1',
-    name: 'Mike Johnson',
-    email: 'mike@capitalpartners.com',
-    firm: 'Capital Partners',
-    title: 'Managing Director',
-    linkedin_url: null,
-    check_size_min: 1000000,
-    check_size_max: 5000000,
-    stages: ['series_a', 'series_b'],
-    sectors: ['saas', 'enterprise'],
-    fit_score: 72,
-    warm_paths: [],
-    source: 'import',
-    created_at: new Date().toISOString(),
-  },
-];
+const DEMO_ORG_ID = '00000000-0000-0000-0000-000000000001';
 
 // GET /api/investors - List all investors
 export async function GET(request: NextRequest) {
   return withErrorHandling(async () => {
+    const supabase = createServiceClient();
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') ?? '1', 10);
     const limit = parseInt(searchParams.get('limit') ?? '20', 10);
     const search = searchParams.get('search') ?? '';
+    const offset = (page - 1) * limit;
 
-    // Filter by search term
-    let filtered = mockInvestors;
+    let query = supabase
+      .from('investors')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false });
+
     if (search) {
-      const lowerSearch = search.toLowerCase();
-      filtered = mockInvestors.filter(
-        inv =>
-          inv.name.toLowerCase().includes(lowerSearch) ||
-          inv.firm?.toLowerCase().includes(lowerSearch) ||
-          inv.email?.toLowerCase().includes(lowerSearch)
-      );
+      query = query.or(`name.ilike.%${search}%,firm.ilike.%${search}%,email.ilike.%${search}%`);
     }
 
-    // Paginate
-    const start = (page - 1) * limit;
-    const paginated = filtered.slice(start, start + limit);
+    const { data, error, count } = await query.range(offset, offset + limit - 1);
 
-    return successResponse(paginated, {
+    if (error) {
+      throw new AppError('INTERNAL_ERROR', error.message);
+    }
+
+    return successResponse(data ?? [], {
       page,
       limit,
-      total: filtered.length,
+      total: count ?? 0,
     });
   });
 }
@@ -80,28 +46,33 @@ export async function GET(request: NextRequest) {
 // POST /api/investors - Create a new investor
 export async function POST(request: NextRequest) {
   return withErrorHandling(async () => {
+    const supabase = createServiceClient();
     const body = await parseBody(request, validateCreateInvestor);
 
-    const newInvestor: Investor = {
-      id: `inv-${Date.now()}`,
-      org_id: 'org-1',
-      name: body.name,
-      email: body.email || null,
-      firm: body.firm ?? null,
-      title: body.title ?? null,
-      linkedin_url: body.linkedin_url || null,
-      check_size_min: body.check_size_min ?? null,
-      check_size_max: body.check_size_max ?? null,
-      stages: body.stages ?? [],
-      sectors: body.sectors ?? [],
-      fit_score: null,
-      warm_paths: [],
-      source: 'manual',
-      created_at: new Date().toISOString(),
-    };
+    const { data, error } = await supabase
+      .from('investors')
+      .insert({
+        org_id: DEMO_ORG_ID,
+        name: body.name,
+        email: body.email || null,
+        firm: body.firm ?? null,
+        title: body.title ?? null,
+        linkedin_url: body.linkedin_url || null,
+        check_size_min: body.check_size_min ?? null,
+        check_size_max: body.check_size_max ?? null,
+        stages: body.stages ?? [],
+        sectors: body.sectors ?? [],
+        fit_score: null,
+        warm_paths: [],
+        source: 'manual',
+      })
+      .select()
+      .single();
 
-    mockInvestors.push(newInvestor);
+    if (error) {
+      throw new AppError('INTERNAL_ERROR', error.message);
+    }
 
-    return successResponse(newInvestor);
+    return successResponse(data);
   });
 }
