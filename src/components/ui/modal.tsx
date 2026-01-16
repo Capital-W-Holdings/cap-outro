@@ -95,7 +95,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', descripti
       <div
         ref={modalRef}
         className={`
-          relative w-full ${sizeClasses[size]} mx-4 bg-white border border-neutral-200
+          relative w-full ${sizeClasses[size]} mx-4 bg-dark-800 border border-dark-600 
           rounded-xl shadow-2xl animate-in
         `}
         role="dialog"
@@ -104,20 +104,20 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', descripti
         aria-describedby={description ? 'modal-description' : undefined}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-dark-600">
           <div>
-            <h2 id="modal-title" className="text-lg font-semibold text-neutral-900 font-mono">
+            <h2 id="modal-title" className="text-lg font-semibold text-white">
               {title}
             </h2>
             {description && (
-              <p id="modal-description" className="text-sm text-neutral-500 mt-1">
+              <p id="modal-description" className="text-sm text-gray-400 mt-1">
                 {description}
               </p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded transition-colors"
+            className="p-1 text-gray-400 hover:text-white hover:bg-dark-600 rounded transition-colors"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -134,7 +134,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', descripti
 // Modal footer for action buttons
 export function ModalFooter({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center justify-end gap-3 pt-4 mt-4 border-t border-neutral-200">
+    <div className="flex items-center justify-end gap-3 pt-4 mt-4 border-t border-dark-600">
       {children}
     </div>
   );

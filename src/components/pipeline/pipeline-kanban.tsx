@@ -39,7 +39,7 @@ export function PipelineKanban({ campaignId }: PipelineKanbanProps) {
   if (!data || data.entries.length === 0) {
     return (
       <EmptyState
-        icon={<Kanban className="w-8 h-8 text-neutral-400" />}
+        icon={<Kanban className="w-8 h-8 text-gray-500" />}
         title="Pipeline is empty"
         description="Add investors to your campaign to see them in the pipeline."
       />
@@ -52,22 +52,22 @@ export function PipelineKanban({ campaignId }: PipelineKanbanProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Stats Bar */}
-      <div className="flex items-center gap-6 p-4 bg-white border-b border-neutral-200">
+      <div className="flex items-center gap-6 p-4 bg-dark-800 border-b border-dark-600">
         <div>
-          <p className="text-sm text-neutral-500">Total Investors</p>
-          <p className="text-2xl font-bold text-neutral-900">{stats.total}</p>
+          <p className="text-sm text-gray-400">Total Investors</p>
+          <p className="text-2xl font-bold text-white">{stats.total}</p>
         </div>
-        <div className="h-10 w-px bg-neutral-200" />
+        <div className="h-10 w-px bg-dark-600" />
         <div>
-          <p className="text-sm text-neutral-500">Soft Commits</p>
-          <p className="text-2xl font-bold text-amber-600">
+          <p className="text-sm text-gray-400">Soft Commits</p>
+          <p className="text-2xl font-bold text-yellow-400">
             ${(stats.total_soft / 1000000).toFixed(1)}M
           </p>
         </div>
-        <div className="h-10 w-px bg-neutral-200" />
+        <div className="h-10 w-px bg-dark-600" />
         <div>
-          <p className="text-sm text-neutral-500">Committed</p>
-          <p className="text-2xl font-bold text-green-600">
+          <p className="text-sm text-gray-400">Committed</p>
+          <p className="text-2xl font-bold text-green-400">
             ${(stats.total_committed / 1000000).toFixed(1)}M
           </p>
         </div>

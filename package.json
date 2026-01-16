@@ -1,17 +1,8 @@
 {
   "name": "cap-outro",
   "version": "1.0.0",
-  "description": "Investor outreach platform for capital raising",
-  "author": "Capital W Holdings",
-  "license": "UNLICENSED",
-  "private": true,
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Capital-W-Holdings/cap-outro.git"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
+  "description": "",
+  "main": "index.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -25,11 +16,12 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed"
   },
-  "keywords": ["investor", "outreach", "fundraising", "crm"],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.90.0",
-    "csv-parse": "^6.1.0",
     "lucide-react": "^0.562.0",
     "next": "^14.2.35",
     "react": "^18.3.1",

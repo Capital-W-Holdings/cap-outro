@@ -1,13 +1,13 @@
 import { NextRequest } from 'next/server';
-import {
-  successResponse,
+import { 
+  successResponse, 
   withErrorHandling,
-  parseBody,
   NotFoundError,
-  AppError,
 } from '@/lib/api/utils';
-import { validateUpdateInvestor } from '@/lib/api/validators';
-import { createServiceClient } from '@/lib/supabase/server';
+import type { Investor } from '@/types';
+
+// Mock data reference
+const mockInvestors: Investor[] = [];
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -17,19 +17,14 @@ interface RouteParams {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    const supabase = createServiceClient();
-
-    const { data, error } = await supabase
-      .from('investors')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error || !data) {
+    
+    const investor = mockInvestors.find(i => i.id === id);
+    
+    if (!investor) {
       throw new NotFoundError('Investor');
     }
 
-    return successResponse(data);
+    return successResponse(investor);
   });
 }
 
@@ -37,25 +32,27 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    const supabase = createServiceClient();
-    const body = await parseBody(request, validateUpdateInvestor);
-
-    const { data, error } = await supabase
-      .from('investors')
-      .update(body)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      throw new AppError('INTERNAL_ERROR', error.message);
-    }
-
-    if (!data) {
+    const body: unknown = await request.json();
+    
+    const investorIndex = mockInvestors.findIndex(i => i.id === id);
+    
+    if (investorIndex === -1) {
       throw new NotFoundError('Investor');
     }
 
-    return successResponse(data);
+    const existingInvestor = mockInvestors[investorIndex];
+    if (!existingInvestor) {
+      throw new NotFoundError('Investor');
+    }
+
+    const updatedInvestor: Investor = {
+      ...existingInvestor,
+      ...(body as Partial<Investor>),
+    };
+
+    mockInvestors[investorIndex] = updatedInvestor;
+
+    return successResponse(updatedInvestor);
   });
 }
 
@@ -63,16 +60,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    const supabase = createServiceClient();
-
-    const { error } = await supabase
-      .from('investors')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      throw new AppError('INTERNAL_ERROR', error.message);
+    
+    const investorIndex = mockInvestors.findIndex(i => i.id === id);
+    
+    if (investorIndex === -1) {
+      throw new NotFoundError('Investor');
     }
+
+    mockInvestors.splice(investorIndex, 1);
 
     return successResponse({ deleted: true });
   });

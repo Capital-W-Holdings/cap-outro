@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  BookOpen,
-  Keyboard,
-  Zap,
-  MessageCircle,
-  Mail,
+import { 
+  BookOpen, 
+  Keyboard, 
+  Zap, 
+  MessageCircle, 
+  Mail, 
   ExternalLink,
   ChevronDown,
   ChevronRight,
@@ -110,7 +110,7 @@ export default function HelpPage() {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <Input
               type="text"
               placeholder="Search help articles..."
@@ -122,20 +122,20 @@ export default function HelpPage() {
 
           {/* Getting Started */}
           <section>
-            <h2 className="text-xl font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-neutral-700" />
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-brand-gold" />
               Getting Started
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {gettingStartedSteps.map((step, index) => (
                 <Card key={index} hover>
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                      <step.icon className="w-5 h-5 text-neutral-700" />
+                    <div className="w-10 h-10 rounded-lg bg-brand-gold/10 flex items-center justify-center flex-shrink-0">
+                      <step.icon className="w-5 h-5 text-brand-gold" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-neutral-900 mb-1">{step.title}</h3>
-                      <p className="text-sm text-neutral-600">{step.description}</p>
+                      <h3 className="font-medium text-white mb-1">{step.title}</h3>
+                      <p className="text-sm text-gray-400">{step.description}</p>
                     </div>
                   </div>
                 </Card>
@@ -145,37 +145,37 @@ export default function HelpPage() {
 
           {/* FAQs */}
           <section>
-            <h2 className="text-xl font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-neutral-700" />
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-brand-gold" />
               Frequently Asked Questions
             </h2>
             <div className="space-y-2">
               {filteredFaqs.map((faq, index) => (
                 <div
                   key={index}
-                  className="bg-white border border-neutral-200 rounded-lg overflow-hidden"
+                  className="bg-dark-800 border border-dark-600 rounded-lg overflow-hidden"
                 >
                   <button
                     onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
-                    className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-neutral-50 transition-colors"
+                    className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-dark-700 transition-colors"
                     aria-expanded={expandedFaq === index}
                   >
-                    <span className="font-medium text-neutral-900">{faq.question}</span>
+                    <span className="font-medium text-white">{faq.question}</span>
                     {expandedFaq === index ? (
-                      <ChevronDown className="w-5 h-5 text-neutral-500" />
+                      <ChevronDown className="w-5 h-5 text-gray-400" />
                     ) : (
-                      <ChevronRight className="w-5 h-5 text-neutral-500" />
+                      <ChevronRight className="w-5 h-5 text-gray-400" />
                     )}
                   </button>
                   {expandedFaq === index && (
-                    <div className="px-4 pb-4 text-neutral-600">
+                    <div className="px-4 pb-4 text-gray-400">
                       {faq.answer}
                     </div>
                   )}
                 </div>
               ))}
               {filteredFaqs.length === 0 && (
-                <p className="text-neutral-500 text-center py-8">
+                <p className="text-gray-500 text-center py-8">
                   No results found for &quot;{searchQuery}&quot;
                 </p>
               )}
@@ -184,20 +184,20 @@ export default function HelpPage() {
 
           {/* Keyboard Shortcuts */}
           <section>
-            <h2 className="text-xl font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-              <Keyboard className="w-5 h-5 text-neutral-700" />
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <Keyboard className="w-5 h-5 text-brand-gold" />
               Keyboard Shortcuts
             </h2>
             <Card>
               <div className="grid grid-cols-2 gap-4">
                 {shortcuts.map((shortcut, index) => (
                   <div key={index} className="flex items-center justify-between">
-                    <span className="text-neutral-600">{shortcut.description}</span>
+                    <span className="text-gray-400">{shortcut.description}</span>
                     <div className="flex items-center gap-1">
                       {shortcut.keys.map((key, keyIndex) => (
                         <kbd
                           key={keyIndex}
-                          className="px-2 py-1 bg-neutral-100 border border-neutral-200 rounded text-xs font-mono text-neutral-700"
+                          className="px-2 py-1 bg-dark-600 border border-dark-500 rounded text-xs font-mono text-gray-300"
                         >
                           {key}
                         </kbd>
@@ -211,21 +211,21 @@ export default function HelpPage() {
 
           {/* Contact */}
           <section>
-            <h2 className="text-xl font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-neutral-700" />
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-brand-gold" />
               Need More Help?
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card hover>
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <Mail className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <Mail className="w-6 h-6 text-blue-400" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-neutral-900">Email Support</h3>
+                    <h3 className="font-medium text-white">Email Support</h3>
                     <a
                       href="mailto:support@capoutro.com"
-                      className="text-sm text-blue-600 hover:underline"
+                      className="text-sm text-brand-gold hover:underline"
                     >
                       support@capoutro.com
                     </a>
@@ -234,16 +234,16 @@ export default function HelpPage() {
               </Card>
               <Card hover>
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <ExternalLink className="w-6 h-6 text-purple-600" />
+                  <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                    <ExternalLink className="w-6 h-6 text-purple-400" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-neutral-900">Documentation</h3>
+                    <h3 className="font-medium text-white">Documentation</h3>
                     <a
                       href="https://docs.capoutro.com"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-purple-600 hover:underline"
+                      className="text-sm text-brand-gold hover:underline"
                     >
                       docs.capoutro.com
                     </a>

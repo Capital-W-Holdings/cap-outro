@@ -1,35 +1,46 @@
 import { NextRequest } from 'next/server';
-import {
-  successResponse,
+import { 
+  successResponse, 
   withErrorHandling,
-  AppError,
 } from '@/lib/api/utils';
-import { createServiceClient } from '@/lib/supabase/server';
 import type { PipelineEntry, PipelineStage } from '@/types';
+
+// Mock data for MVP
+const mockPipeline: PipelineEntry[] = [
+  {
+    id: '1',
+    campaign_id: '1',
+    investor_id: '1',
+    stage: 'contacted',
+    amount_soft: null,
+    amount_committed: null,
+    notes: 'Sent initial outreach',
+    last_activity_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    campaign_id: '1',
+    investor_id: '2',
+    stage: 'meeting_scheduled',
+    amount_soft: 500000,
+    amount_committed: null,
+    notes: 'Call scheduled for next week',
+    last_activity_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+  },
+];
 
 // GET /api/pipeline - Get pipeline for a campaign
 export async function GET(request: NextRequest) {
   return withErrorHandling(async () => {
-    const supabase = createServiceClient();
     const searchParams = request.nextUrl.searchParams;
     const campaignId = searchParams.get('campaign_id');
 
-    let query = supabase
-      .from('pipeline')
-      .select('*')
-      .order('last_activity_at', { ascending: false });
-
+    let filtered = mockPipeline;
     if (campaignId) {
-      query = query.eq('campaign_id', campaignId);
+      filtered = mockPipeline.filter(p => p.campaign_id === campaignId);
     }
-
-    const { data, error } = await query;
-
-    if (error) {
-      throw new AppError('INTERNAL_ERROR', error.message);
-    }
-
-    const filtered = (data ?? []) as PipelineEntry[];
 
     // Group by stage for Kanban view
     const stages: PipelineStage[] = [
@@ -70,30 +81,26 @@ export async function GET(request: NextRequest) {
 // POST /api/pipeline - Add investor to pipeline
 export async function POST(request: NextRequest) {
   return withErrorHandling(async () => {
-    const supabase = createServiceClient();
     const body = await request.json() as {
       campaign_id: string;
       investor_id: string;
       stage?: PipelineStage;
     };
 
-    const { data, error } = await supabase
-      .from('pipeline')
-      .insert({
-        campaign_id: body.campaign_id,
-        investor_id: body.investor_id,
-        stage: body.stage ?? 'not_contacted',
-        amount_soft: null,
-        amount_committed: null,
-        notes: null,
-      })
-      .select()
-      .single();
+    const newEntry: PipelineEntry = {
+      id: `pipe-${Date.now()}`,
+      campaign_id: body.campaign_id,
+      investor_id: body.investor_id,
+      stage: body.stage ?? 'not_contacted',
+      amount_soft: null,
+      amount_committed: null,
+      notes: null,
+      last_activity_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    };
 
-    if (error) {
-      throw new AppError('INTERNAL_ERROR', error.message);
-    }
+    mockPipeline.push(newEntry);
 
-    return successResponse(data);
+    return successResponse(newEntry);
   });
 }

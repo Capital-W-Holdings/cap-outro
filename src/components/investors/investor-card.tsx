@@ -18,18 +18,18 @@ export function InvestorCard({ investor, onSelect, onMenuClick, selected }: Inve
     ? `$${(investor.check_size_min / 1000).toFixed(0)}K+`
     : null;
 
-  const fitScoreColor =
-    (investor.fit_score ?? 0) >= 80 ? 'text-green-600' :
-    (investor.fit_score ?? 0) >= 60 ? 'text-amber-600' :
-    (investor.fit_score ?? 0) >= 40 ? 'text-orange-600' :
-    'text-neutral-400';
+  const fitScoreColor = 
+    (investor.fit_score ?? 0) >= 80 ? 'text-green-400' :
+    (investor.fit_score ?? 0) >= 60 ? 'text-yellow-400' :
+    (investor.fit_score ?? 0) >= 40 ? 'text-orange-400' :
+    'text-gray-400';
 
   return (
-    <Card
-      hover
+    <Card 
+      hover 
       className={`
         cursor-pointer transition-all
-        ${selected ? 'ring-2 ring-neutral-900 border-neutral-900' : ''}
+        ${selected ? 'ring-2 ring-brand-gold border-brand-gold' : ''}
       `}
       onClick={() => onSelect?.(investor)}
     >
@@ -37,18 +37,18 @@ export function InvestorCard({ investor, onSelect, onMenuClick, selected }: Inve
         {/* Left: Info */}
         <div className="flex items-start gap-3">
           {/* Avatar */}
-          <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-white font-semibold">
+          <div className="w-10 h-10 rounded-full bg-dark-600 flex items-center justify-center text-brand-gold font-semibold">
             {investor.name.charAt(0).toUpperCase()}
           </div>
 
           <div>
-            <h3 className="font-semibold text-neutral-900">{investor.name}</h3>
-
+            <h3 className="font-semibold text-white">{investor.name}</h3>
+            
             {investor.firm && (
-              <div className="flex items-center gap-1.5 text-sm text-neutral-500 mt-0.5">
+              <div className="flex items-center gap-1.5 text-sm text-gray-400 mt-0.5">
                 <Building2 className="w-3.5 h-3.5" />
                 <span>{investor.firm}</span>
-                {investor.title && <span className="text-neutral-400">· {investor.title}</span>}
+                {investor.title && <span className="text-gray-500">· {investor.title}</span>}
               </div>
             )}
 
@@ -58,7 +58,7 @@ export function InvestorCard({ investor, onSelect, onMenuClick, selected }: Inve
                 <a
                   href={`mailto:${investor.email}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="p-1 text-neutral-400 hover:text-neutral-900 transition-colors"
+                  className="p-1 text-gray-500 hover:text-brand-gold transition-colors"
                   title={investor.email}
                 >
                   <Mail className="w-4 h-4" />
@@ -70,7 +70,7 @@ export function InvestorCard({ investor, onSelect, onMenuClick, selected }: Inve
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="p-1 text-neutral-400 hover:text-neutral-900 transition-colors"
+                  className="p-1 text-gray-500 hover:text-brand-gold transition-colors"
                 >
                   <Linkedin className="w-4 h-4" />
                 </a>
@@ -83,7 +83,7 @@ export function InvestorCard({ investor, onSelect, onMenuClick, selected }: Inve
         <div className="flex items-start gap-2">
           {investor.fit_score !== null && (
             <div className="text-right">
-              <p className="text-xs text-neutral-500">Fit Score</p>
+              <p className="text-xs text-gray-500">Fit Score</p>
               <p className={`text-lg font-bold ${fitScoreColor}`}>
                 {investor.fit_score}
               </p>
@@ -96,7 +96,7 @@ export function InvestorCard({ investor, onSelect, onMenuClick, selected }: Inve
                 e.stopPropagation();
                 onMenuClick(investor);
               }}
-              className="p-1 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded transition-colors"
+              className="p-1 text-gray-500 hover:text-white hover:bg-dark-600 rounded transition-colors"
             >
               <MoreHorizontal className="w-5 h-5" />
             </button>
@@ -105,11 +105,11 @@ export function InvestorCard({ investor, onSelect, onMenuClick, selected }: Inve
       </div>
 
       {/* Bottom Stats */}
-      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-neutral-200">
+      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-dark-600">
         {checkSize && (
           <div className="flex items-center gap-1.5 text-sm">
-            <TrendingUp className="w-4 h-4 text-neutral-400" />
-            <span className="text-neutral-600">{checkSize}</span>
+            <TrendingUp className="w-4 h-4 text-gray-500" />
+            <span className="text-gray-300">{checkSize}</span>
           </div>
         )}
 
@@ -118,7 +118,7 @@ export function InvestorCard({ investor, onSelect, onMenuClick, selected }: Inve
             {investor.stages.slice(0, 2).map((stage) => (
               <span
                 key={stage}
-                className="px-1.5 py-0.5 bg-neutral-100 rounded text-xs text-neutral-600"
+                className="px-1.5 py-0.5 bg-dark-600 rounded text-xs text-gray-400"
               >
                 {stage.replace('_', ' ')}
               </span>
@@ -131,7 +131,7 @@ export function InvestorCard({ investor, onSelect, onMenuClick, selected }: Inve
             {investor.sectors.slice(0, 2).map((sector) => (
               <span
                 key={sector}
-                className="px-1.5 py-0.5 bg-neutral-900 text-white rounded text-xs"
+                className="px-1.5 py-0.5 bg-brand-gold/10 text-brand-gold rounded text-xs"
               >
                 {sector}
               </span>
