@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import {
   ALL_PUBLIC_INVESTORS,
   TIER1_VCS,
@@ -18,10 +18,17 @@ import {
   type PublicInvestor,
 } from '@/lib/enrichment/public-investor-data';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Lazy initialization to avoid build-time errors
+let supabaseInstance: SupabaseClient | null = null;
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+  }
+  return supabaseInstance;
+}
 
 // Map category to investor array
 const CATEGORY_MAP: Record<string, PublicInvestor[]> = {
@@ -98,7 +105,7 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < investorRecords.length; i += 50) {
       const batch = investorRecords.slice(i, i + 50);
 
-      const { error } = await supabase
+      const { error } = await getSupabase()
         .from('investors')
         .upsert(batch, {
           onConflict: 'org_id,name',

@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 
     const batchId = batch!.id;
 
-    // Process investors
+    // Process investors - batch duplicate checks to avoid N+1 queries
     const investorsToInsert: Array<{
       org_id: string;
       name: string;
@@ -117,32 +117,56 @@ export async function POST(request: NextRequest) {
       import_batch_id: string;
     }> = [];
 
+    // Collect all emails and name+firm pairs for batch lookup
+    const emails = result.investors
+      .map((inv) => inv.email)
+      .filter((email): email is string => !!email);
+
+    const nameFirmPairs = result.investors
+      .filter((inv) => inv.firm)
+      .map((inv) => ({ name: inv.name, firm: inv.firm }));
+
+    // Batch fetch existing investors by email
+    const existingByEmail = new Set<string>();
+    if (emails.length > 0) {
+      const { data: emailMatches } = await supabase
+        .from('investors')
+        .select('email')
+        .eq('org_id', orgId)
+        .in('email', emails);
+
+      emailMatches?.forEach((inv: { email: string | null }) => {
+        if (inv.email) existingByEmail.add(inv.email.toLowerCase());
+      });
+    }
+
+    // Batch fetch existing investors by name+firm
+    const existingByNameFirm = new Set<string>();
+    if (nameFirmPairs.length > 0) {
+      // Get all investors with matching firms first, then filter by name
+      const firms = Array.from(new Set(nameFirmPairs.map((p) => p.firm).filter((f): f is string => !!f)));
+      const { data: firmMatches } = await supabase
+        .from('investors')
+        .select('name, firm')
+        .eq('org_id', orgId)
+        .in('firm', firms);
+
+      firmMatches?.forEach((inv: { name: string | null; firm: string | null }) => {
+        if (inv.name && inv.firm) {
+          existingByNameFirm.add(`${inv.name.toLowerCase()}|${inv.firm.toLowerCase()}`);
+        }
+      });
+    }
+
+    // Process each investor using batch lookup results
     for (const investor of result.investors) {
-      // Check for duplicate by email or name+firm
-      let existingInvestor = null;
+      const emailExists = investor.email && existingByEmail.has(investor.email.toLowerCase());
+      const nameFirmExists = investor.firm &&
+        existingByNameFirm.has(`${investor.name.toLowerCase()}|${investor.firm.toLowerCase()}`);
 
-      if (investor.email) {
-        const { data } = await supabase
-          .from('investors')
-          .select('id')
-          .eq('org_id', orgId)
-          .eq('email', investor.email)
-          .single();
-        existingInvestor = data;
-      }
+      const isDuplicate = emailExists || nameFirmExists;
 
-      if (!existingInvestor && investor.firm) {
-        const { data } = await supabase
-          .from('investors')
-          .select('id')
-          .eq('org_id', orgId)
-          .eq('name', investor.name)
-          .eq('firm', investor.firm)
-          .single();
-        existingInvestor = data;
-      }
-
-      if (!existingInvestor) {
+      if (!isDuplicate) {
         investorsToInsert.push({
           org_id: orgId,
           name: investor.name,

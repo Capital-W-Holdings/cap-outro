@@ -2,9 +2,11 @@ import { NextRequest } from 'next/server';
 import {
   successResponse,
   withErrorHandling,
+  parseBody,
   NotFoundError,
   AppError,
 } from '@/lib/api/utils';
+import { validateUpdateInvestor } from '@/lib/api/validators';
 import { createServiceClient } from '@/lib/supabase/server';
 
 interface RouteParams {
@@ -36,7 +38,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
     const supabase = createServiceClient();
-    const body = await request.json();
+    const body = await parseBody(request, validateUpdateInvestor);
 
     const { data, error } = await supabase
       .from('investors')

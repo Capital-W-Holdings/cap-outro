@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (search) {
-      query = query.or(`name.ilike.%${search}%,firm.ilike.%${search}%,email.ilike.%${search}%`);
+      // Sanitize search input to prevent SQL injection via special characters
+      const sanitizedSearch = search.replace(/[%_\\]/g, '\\$&');
+      query = query.or(`name.ilike.%${sanitizedSearch}%,firm.ilike.%${sanitizedSearch}%,email.ilike.%${sanitizedSearch}%`);
     }
 
     const { data, error, count } = await query.range(offset, offset + limit - 1);

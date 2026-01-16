@@ -32,6 +32,13 @@ export async function sendEmail(options: EmailOptions): Promise<SendResult> {
 }
 
 /**
+ * Escape special regex characters in a string
+ */
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * Interpolate template variables into content
  * Variables are wrapped in double curly braces: {{variable_name}}
  */
@@ -40,17 +47,19 @@ export function interpolateTemplate(
   variables: TemplateVariables
 ): string {
   let result = content;
-  
+
   for (const [key, value] of Object.entries(variables)) {
     if (value !== undefined) {
-      const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
+      // Escape key to prevent ReDoS attacks from malicious variable names
+      const escapedKey = escapeRegExp(key);
+      const regex = new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}\\}`, 'g');
       result = result.replace(regex, value);
     }
   }
-  
+
   // Remove any remaining unmatched variables
   result = result.replace(/\{\{\s*\w+\s*\}\}/g, '');
-  
+
   return result;
 }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useFetch, useMutation } from '@/hooks/use-fetch';
 
 // Mock fetch
@@ -84,7 +84,7 @@ describe('useMutation', () => {
     const { result } = renderHook(() => useMutation('/api/test', 'POST'));
 
     let returnedData;
-    await waitFor(async () => {
+    await act(async () => {
       returnedData = await result.current.mutate({ name: 'Test' });
     });
 
@@ -100,12 +100,12 @@ describe('useMutation', () => {
 
     const { result } = renderHook(() => useMutation('/api/test', 'POST'));
 
-    await expect(result.current.mutate({})).rejects.toThrow('Error');
-
-    await waitFor(() => {
-      expect(result.current.error?.message).toBe('Error');
-      expect(result.current.isLoading).toBe(false);
+    await act(async () => {
+      await expect(result.current.mutate({})).rejects.toThrow('Error');
     });
+
+    expect(result.current.error?.message).toBe('Error');
+    expect(result.current.isLoading).toBe(false);
   });
 
   it('sends correct HTTP method', async () => {
@@ -115,7 +115,9 @@ describe('useMutation', () => {
 
     const { result } = renderHook(() => useMutation('/api/test', 'PATCH'));
 
-    await result.current.mutate({ id: '1' });
+    await act(async () => {
+      await result.current.mutate({ id: '1' });
+    });
 
     expect(mockFetch).toHaveBeenCalledWith(
       '/api/test',
@@ -130,19 +132,17 @@ describe('useMutation', () => {
 
     const { result } = renderHook(() => useMutation('/api/test', 'POST'));
 
-    await waitFor(async () => {
+    await act(async () => {
       await result.current.mutate({});
     });
 
-    await waitFor(() => {
-      expect(result.current.data).not.toBe(null);
+    expect(result.current.data).not.toBe(null);
+
+    act(() => {
+      result.current.reset();
     });
 
-    result.current.reset();
-    
-    await waitFor(() => {
-      expect(result.current.data).toBe(null);
-      expect(result.current.error).toBe(null);
-    });
+    expect(result.current.data).toBe(null);
+    expect(result.current.error).toBe(null);
   });
 });

@@ -17,11 +17,16 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Set demo session cookie
-      document.cookie = `cap-outro-demo-session=${email}; path=/; max-age=${60 * 60 * 24 * 7}`; // 7 days
+      // Call login API to set secure HttpOnly cookie
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
 
-      // Small delay for UX
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (!response.ok) {
+        throw new Error('Failed to sign in');
+      }
 
       // Redirect to dashboard
       const params = new URLSearchParams(window.location.search);
