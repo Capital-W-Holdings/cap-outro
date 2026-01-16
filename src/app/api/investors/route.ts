@@ -35,19 +35,18 @@ export async function GET(request: NextRequest) {
     const supabase = createServiceClient();
 
     // Build query - show platform investors OR user's own investors
-    // In demo mode, show all platform investors
+    // In demo mode, show all investors
     const isDemoMode = user.id === 'demo-user-id';
     let query = supabase
       .from('investors')
       .select('*', { count: 'exact' });
 
-    if (isDemoMode) {
-      query = query.eq('is_platform', true);
-    } else {
+    // In demo mode, show all investors; otherwise filter by user
+    if (!isDemoMode) {
       query = query.or(`is_platform.eq.true,user_id.eq.${user.id}`);
     }
 
-    // Filter by contact method - default to only showing investors with real contact info
+    // Filter by contact method - default to showing all investors
     if (contactMethod === 'email') {
       // Only investors with personal email
       query = query.not('email', 'is', null);
@@ -57,12 +56,8 @@ export async function GET(request: NextRequest) {
     } else if (contactMethod === 'both') {
       // Investors with both email and LinkedIn
       query = query.not('email', 'is', null).not('linkedin_url', 'is', null);
-    } else if (contactMethod === 'all') {
-      // Show all investors including those without contact info
-    } else {
-      // Default: only show investors with real contact info (email OR LinkedIn)
-      query = query.or('email.neq.null,linkedin_url.neq.null');
     }
+    // Default (including 'all'): show all investors
 
     // Apply search filter
     if (search) {
