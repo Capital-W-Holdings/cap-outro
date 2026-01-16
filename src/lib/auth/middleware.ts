@@ -1,17 +1,59 @@
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function updateSession(request: NextRequest) {
-  const response = NextResponse.next({
+  let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   });
 
-  // Check for demo session cookie
-  const demoSession = request.cookies.get('cap-outro-demo-session')?.value;
+  // Demo mode - allow all requests through without authentication
+  // Remove this block to enable real authentication
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || true; // Default to demo
+  if (isDemoMode) {
+    return response;
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    // No Supabase config - allow request through
+    return response;
+  }
+
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get(name: string) {
+        return request.cookies.get(name)?.value;
+      },
+      set(name: string, value: string, options: CookieOptions) {
+        request.cookies.set({ name, value, ...options });
+        response = NextResponse.next({
+          request: {
+            headers: request.headers,
+          },
+        });
+        response.cookies.set({ name, value, ...options });
+      },
+      remove(name: string, options: CookieOptions) {
+        request.cookies.set({ name, value: '', ...options });
+        response = NextResponse.next({
+          request: {
+            headers: request.headers,
+          },
+        });
+        response.cookies.set({ name, value: '', ...options });
+      },
+    },
+  });
+
+  // Refresh session if needed
+  const { data: { user } } = await supabase.auth.getUser();
 
   // Protected routes
-  const protectedPaths = ['/campaigns', '/investors', '/pipeline', '/sequences', '/outreach', '/settings', '/templates', '/help'];
+  const protectedPaths = ['/campaigns', '/investors', '/pipeline', '/sequences', '/outreach', '/settings'];
   const isProtectedPath = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
@@ -22,15 +64,15 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith(path)
   );
 
-  // If on protected path without session, redirect to login
-  if (isProtectedPath && !demoSession) {
+  // If on protected path without user, redirect to login
+  if (isProtectedPath && !user) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // If on auth path with session, redirect to dashboard
-  if (isAuthPath && demoSession) {
+  // If on auth path with user, redirect to dashboard
+  if (isAuthPath && user) {
     return NextResponse.redirect(new URL('/campaigns', request.url));
   }
 

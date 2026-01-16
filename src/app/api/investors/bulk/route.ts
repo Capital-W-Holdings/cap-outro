@@ -1,40 +1,62 @@
 import { NextRequest } from 'next/server';
-import { 
-  successResponse, 
+import {
+  successResponse,
   withErrorHandling,
   parseBody,
 } from '@/lib/api/utils';
 import { validateBulkImport } from '@/lib/api/validators';
-import type { Investor } from '@/types';
+import { createServiceClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth/utils';
+import { normalizeLinkedInUrl, isValidEmail } from '@/lib/enrichment';
+import { logBulkInvestorImport } from '@/lib/activity';
 
 // POST /api/investors/bulk - Bulk import investors
 export async function POST(request: NextRequest) {
   return withErrorHandling(async () => {
-    const body = await parseBody(request, validateBulkImport);
+    // Get authenticated user
+    const user = await requireAuth();
 
-    const imported: Investor[] = [];
+    const body = await parseBody(request, validateBulkImport);
+    const supabase = createServiceClient();
+
+    const toInsert: Array<{
+      org_id: string;
+      user_id: string;
+      is_platform: boolean;
+      name: string;
+      email: string | null;
+      firm: string | null;
+      title: string | null;
+      linkedin_url: string | null;
+      check_size_min: number | null;
+      check_size_max: number | null;
+      stages: string[];
+      sectors: string[];
+      source: string;
+    }> = [];
+
     const errors: Array<{ row: number; error: string }> = [];
 
     body.investors.forEach((inv, index) => {
       try {
-        const newInvestor: Investor = {
-          id: `inv-${Date.now()}-${index}`,
-          org_id: 'org-1',
+        // Validate email if provided
+        const email = inv.email && isValidEmail(inv.email) ? inv.email : null;
+
+        toInsert.push({
+          org_id: user.orgId,
+          user_id: user.id,
+          is_platform: false,
           name: inv.name,
-          email: inv.email || null,
+          email,
           firm: inv.firm ?? null,
           title: inv.title ?? null,
-          linkedin_url: inv.linkedin_url || null,
+          linkedin_url: normalizeLinkedInUrl(inv.linkedin_url ?? null),
           check_size_min: null,
           check_size_max: null,
           stages: [],
           sectors: [],
-          fit_score: null,
-          warm_paths: [],
           source: 'import',
-          created_at: new Date().toISOString(),
-        };
-        imported.push(newInvestor);
+        });
       } catch (err) {
         errors.push({
           row: index + 1,
@@ -43,15 +65,72 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // TODO: Insert all into Supabase
-    // const supabase = await createServerSupabaseClient();
-    // const { data, error } = await supabase
-    //   .from('investors')
-    //   .insert(imported)
-    //   .select();
+    // Batch insert to Supabase
+    if (toInsert.length > 0) {
+      const { data, error } = await supabase
+        .from('investors')
+        .insert(toInsert)
+        .select();
+
+      if (error) {
+        console.error('Supabase bulk insert error:', error);
+        // Try inserting one by one to identify problematic records
+        let successCount = 0;
+        const successfulInvestors: Array<{ id: string; name: string }> = [];
+
+        for (let i = 0; i < toInsert.length; i++) {
+          const inv = toInsert[i];
+          if (!inv) continue;
+          const { data: singleData, error: singleError } = await supabase
+            .from('investors')
+            .insert(inv)
+            .select('id, name')
+            .single();
+
+          if (singleError) {
+            errors.push({
+              row: i + 1,
+              error: singleError.message,
+            });
+          } else {
+            successCount++;
+            if (singleData) {
+              successfulInvestors.push({ id: singleData.id, name: singleData.name });
+            }
+          }
+        }
+
+        // Log the bulk import
+        if (successfulInvestors.length > 0) {
+          await logBulkInvestorImport(supabase, user.orgId, successfulInvestors, 'import');
+        }
+
+        return successResponse({
+          imported: successCount,
+          errors: errors.length,
+          errorDetails: errors.length > 0 ? errors : undefined,
+        });
+      }
+
+      // Log the bulk import
+      if (data && data.length > 0) {
+        await logBulkInvestorImport(
+          supabase,
+          user.orgId,
+          data.map((inv: { id: string; name: string }) => ({ id: inv.id, name: inv.name })),
+          'import'
+        );
+      }
+
+      return successResponse({
+        imported: data?.length ?? 0,
+        errors: errors.length,
+        errorDetails: errors.length > 0 ? errors : undefined,
+      });
+    }
 
     return successResponse({
-      imported: imported.length,
+      imported: 0,
       errors: errors.length,
       errorDetails: errors.length > 0 ? errors : undefined,
     });

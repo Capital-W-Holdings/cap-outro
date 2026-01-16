@@ -1,19 +1,33 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Header } from '@/components/layout';
-import { InvestorList, ImportInvestorsModal, SeedInvestorsModal } from '@/components/investors';
-import { Button } from '@/components/ui';
-import { Database } from 'lucide-react';
+import { InvestorList, ImportInvestorsModal, InvestorDetailModal, InvestorEditModal } from '@/components/investors';
+import { InvestorFiltersBar, ActiveFilterChips } from '@/components/investors/investor-filters';
+import type { InvestorFilters } from '@/hooks/use-investors';
+import type { Investor } from '@/types';
 
 export default function InvestorsPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [isSeedModalOpen, setIsSeedModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<InvestorFilters>({});
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Modal states
+  const [selectedInvestor, setSelectedInvestor] = useState<Investor | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  // Merge search with other filters
+  const combinedFilters = useMemo(
+    () => ({
+      ...filters,
+      search: searchQuery || undefined,
+    }),
+    [filters, searchQuery]
+  );
+
   const handleAddInvestor = useCallback(() => {
-    // For now, open import modal
     setIsImportModalOpen(true);
   }, []);
 
@@ -23,6 +37,39 @@ export default function InvestorsPage() {
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
+  }, []);
+
+  const handleViewInvestor = useCallback((investor: Investor) => {
+    setSelectedInvestor(investor);
+    setIsDetailModalOpen(true);
+  }, []);
+
+  const handleEditInvestor = useCallback((investor: Investor) => {
+    setSelectedInvestor(investor);
+    setIsDetailModalOpen(false);
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleEditSuccess = useCallback(() => {
+    setIsEditModalOpen(false);
+    setRefreshKey((k) => k + 1);
+    // Reopen detail modal with updated data
+    if (selectedInvestor) {
+      setIsDetailModalOpen(true);
+    }
+  }, [selectedInvestor]);
+
+  const handleCloseDetailModal = useCallback(() => {
+    setIsDetailModalOpen(false);
+    setSelectedInvestor(null);
+  }, []);
+
+  const handleCloseEditModal = useCallback(() => {
+    setIsEditModalOpen(false);
+  }, []);
+
+  const handleFiltersChange = useCallback((newFilters: InvestorFilters) => {
+    setFilters(newFilters);
   }, []);
 
   return (
@@ -38,39 +85,46 @@ export default function InvestorsPage() {
         }}
       />
 
-      {/* Quick Actions Bar */}
-      <div className="flex items-center gap-3 px-6 py-3 bg-neutral-50 border-b border-neutral-200">
-        <span className="text-sm text-neutral-500">Quick actions:</span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsSeedModalOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <Database className="w-4 h-4" />
-          Seed Public Data
-        </Button>
-      </div>
+      <div className="flex-1 p-4 sm:p-6 overflow-auto">
+        {/* Filter Bar */}
+        <div className="mb-4">
+          <InvestorFiltersBar filters={combinedFilters} onChange={handleFiltersChange} />
+          <ActiveFilterChips filters={combinedFilters} onChange={handleFiltersChange} />
+        </div>
 
-      <div className="flex-1 p-6 overflow-auto">
+        {/* Investor List */}
         <InvestorList
           key={refreshKey}
-          search={searchQuery}
+          filters={combinedFilters}
           onAddInvestor={handleAddInvestor}
+          onViewInvestor={handleViewInvestor}
         />
       </div>
 
+      {/* Import Modal */}
       <ImportInvestorsModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         onSuccess={handleImportSuccess}
       />
 
-      <SeedInvestorsModal
-        isOpen={isSeedModalOpen}
-        onClose={() => setIsSeedModalOpen(false)}
-        onSuccess={handleImportSuccess}
+      {/* Investor Detail Modal */}
+      <InvestorDetailModal
+        investor={selectedInvestor}
+        isOpen={isDetailModalOpen}
+        onClose={handleCloseDetailModal}
+        onEdit={handleEditInvestor}
       />
+
+      {/* Investor Edit Modal */}
+      {selectedInvestor && (
+        <InvestorEditModal
+          investor={selectedInvestor}
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          onSuccess={handleEditSuccess}
+        />
+      )}
     </div>
   );
 }

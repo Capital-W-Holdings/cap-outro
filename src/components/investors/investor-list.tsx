@@ -1,26 +1,30 @@
 'use client';
 
-import { useInvestors } from '@/hooks';
+import { Users } from 'lucide-react';
+import { useInvestors, type InvestorFilters } from '@/hooks';
 import { InvestorCard } from './investor-card';
 import { SkeletonCard, ErrorState, NoInvestorsState } from '@/components/ui';
 import type { Investor } from '@/types';
 
 interface InvestorListProps {
-  search?: string;
+  filters?: InvestorFilters;
   onAddInvestor: () => void;
   onSelectInvestor?: (investor: Investor) => void;
+  onViewInvestor?: (investor: Investor) => void;
   selectedIds?: string[];
   selectable?: boolean;
 }
 
-export function InvestorList({ 
-  search, 
-  onAddInvestor, 
+export function InvestorList({
+  filters = {},
+  onAddInvestor,
   onSelectInvestor,
+  onViewInvestor,
   selectedIds = [],
   selectable = false,
 }: InvestorListProps) {
-  const { data: investors, isLoading, error, refetch } = useInvestors(search);
+  const { data: investors, meta, isLoading, error, refetch } = useInvestors(filters);
+  const totalCount = meta?.total ?? investors?.length ?? 0;
 
   // Loading state
   if (isLoading) {
@@ -40,20 +44,53 @@ export function InvestorList({
 
   // Empty state
   if (!investors || investors.length === 0) {
+    const hasFilters =
+      filters.search ||
+      (filters.stages?.length ?? 0) > 0 ||
+      (filters.sectors?.length ?? 0) > 0 ||
+      filters.check_size_min ||
+      filters.check_size_max ||
+      filters.fit_score_min;
+
+    if (hasFilters) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-gray-600 mb-4">No investors match your filters</p>
+          <button
+            onClick={onAddInvestor}
+            className="text-black hover:underline text-sm font-medium"
+          >
+            Import investors to grow your database
+          </button>
+        </div>
+      );
+    }
+
     return <NoInvestorsState onAddInvestor={onAddInvestor} />;
   }
 
   // Data loaded
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {investors.map((investor) => (
-        <InvestorCard
-          key={investor.id}
-          investor={investor}
-          onSelect={selectable ? onSelectInvestor : undefined}
-          selected={selectedIds.includes(investor.id)}
-        />
-      ))}
+    <div>
+      {/* Investor Count */}
+      <div className="flex items-center gap-2 mb-4 text-gray-600">
+        <Users className="w-4 h-4" />
+        <span className="text-sm font-medium">
+          {totalCount.toLocaleString()} investor{totalCount !== 1 ? 's' : ''} found
+        </span>
+      </div>
+
+      {/* Investor Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {investors.map((investor) => (
+          <InvestorCard
+            key={investor.id}
+            investor={investor}
+            onSelect={selectable ? onSelectInvestor : onViewInvestor}
+            selected={selectedIds.includes(investor.id)}
+          />
+        ))}
+      </div>
     </div>
   );
 }

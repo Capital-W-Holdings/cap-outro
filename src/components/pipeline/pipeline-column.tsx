@@ -9,7 +9,7 @@ interface PipelineColumnProps {
 }
 
 const stageConfig: Record<PipelineStage, { label: string; color: string }> = {
-  not_contacted: { label: 'Not Contacted', color: 'bg-neutral-400' },
+  not_contacted: { label: 'Not Contacted', color: 'bg-gray-500' },
   contacted: { label: 'Contacted', color: 'bg-blue-500' },
   responded: { label: 'Responded', color: 'bg-cyan-500' },
   meeting_scheduled: { label: 'Meeting Scheduled', color: 'bg-purple-500' },
@@ -24,13 +24,13 @@ export function PipelineColumn({ stage, entries, onMoveEntry: _onMoveEntry }: Pi
   const config = stageConfig[stage];
 
   return (
-    <div className="flex-shrink-0 w-72 bg-neutral-50 rounded-xl border border-neutral-200 flex flex-col max-h-full">
+    <div className="flex-shrink-0 w-72 bg-gray-50 rounded-xl border border-gray-200 flex flex-col max-h-full">
       {/* Column Header */}
-      <div className="p-3 border-b border-neutral-200">
+      <div className="p-3 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${config.color}`} />
-          <h3 className="font-medium text-neutral-900">{config.label}</h3>
-          <span className="ml-auto px-2 py-0.5 bg-neutral-200 rounded-full text-xs text-neutral-600">
+          <h3 className="font-medium text-black">{config.label}</h3>
+          <span className="ml-auto px-2 py-0.5 bg-gray-200 rounded-full text-xs text-gray-600">
             {entries.length}
           </span>
         </div>
@@ -39,7 +39,7 @@ export function PipelineColumn({ stage, entries, onMoveEntry: _onMoveEntry }: Pi
       {/* Cards */}
       <div className="flex-1 p-2 space-y-2 overflow-y-auto">
         {entries.length === 0 ? (
-          <div className="p-4 text-center text-neutral-500 text-sm">
+          <div className="p-4 text-center text-gray-500 text-sm">
             No investors
           </div>
         ) : (
@@ -61,15 +61,15 @@ function PipelineCard({ entry }: { entry: PipelineEntry }) {
   };
 
   return (
-    <div className="bg-white rounded-lg p-3 hover:shadow-md transition-all cursor-pointer border border-neutral-200 hover:border-neutral-300">
+    <div className="bg-white rounded-lg p-3 hover:bg-gray-50 transition-colors cursor-pointer border border-gray-200 hover:border-gray-300">
       {/* Investor info - in real app, would fetch from investor */}
       <div className="flex items-center gap-2 mb-2">
-        <div className="w-8 h-8 rounded-full bg-neutral-900 flex items-center justify-center text-white text-sm font-semibold">
+        <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white text-sm font-semibold">
           I
         </div>
         <div>
-          <p className="text-sm font-medium text-neutral-900">Investor {entry.investor_id.slice(-4)}</p>
-          <p className="text-xs text-neutral-500">ID: {entry.investor_id.slice(0, 8)}...</p>
+          <p className="text-sm font-medium text-black">Investor {entry.investor_id.slice(-4)}</p>
+          <p className="text-xs text-gray-500">ID: {entry.investor_id.slice(0, 8)}...</p>
         </div>
       </div>
 
@@ -78,13 +78,13 @@ function PipelineCard({ entry }: { entry: PipelineEntry }) {
         <div className="flex items-center gap-3 text-sm">
           {entry.amount_soft && (
             <div>
-              <p className="text-neutral-500 text-xs">Soft</p>
-              <p className="text-amber-600 font-medium">{formatCurrency(entry.amount_soft)}</p>
+              <p className="text-gray-500 text-xs">Soft</p>
+              <p className="text-yellow-600 font-medium">{formatCurrency(entry.amount_soft)}</p>
             </div>
           )}
           {entry.amount_committed && (
             <div>
-              <p className="text-neutral-500 text-xs">Committed</p>
+              <p className="text-gray-500 text-xs">Committed</p>
               <p className="text-green-600 font-medium">{formatCurrency(entry.amount_committed)}</p>
             </div>
           )}
@@ -93,11 +93,11 @@ function PipelineCard({ entry }: { entry: PipelineEntry }) {
 
       {/* Notes */}
       {entry.notes && (
-        <p className="text-xs text-neutral-600 mt-2 line-clamp-2">{entry.notes}</p>
+        <p className="text-xs text-gray-600 mt-2 line-clamp-2">{entry.notes}</p>
       )}
 
       {/* Last activity */}
-      <p className="text-xs text-neutral-500 mt-2">
+      <p className="text-xs text-gray-500 mt-2">
         Updated {new Date(entry.last_activity_at).toLocaleDateString()}
       </p>
     </div>

@@ -29,13 +29,13 @@ describe('Button', () => {
   it('applies primary variant styles by default', () => {
     render(<Button>Primary</Button>);
     const button = screen.getByRole('button');
-    expect(button.className).toContain('bg-neutral-900');
+    expect(button.className).toContain('bg-brand-gold');
   });
 
   it('applies secondary variant styles', () => {
     render(<Button variant="secondary">Secondary</Button>);
     const button = screen.getByRole('button');
-    expect(button.className).toContain('bg-neutral-100');
+    expect(button.className).toContain('bg-dark-600');
   });
 
   it('applies outline variant styles', () => {

@@ -13,7 +13,7 @@ import {
   TabsTrigger, 
   TabsContent,
 } from '@/components/ui';
-import { CampaignOverview, AddInvestorToCampaignModal } from '@/components/campaigns';
+import { CampaignOverview, AddInvestorToCampaignModal, CampaignRunner } from '@/components/campaigns';
 import { InvestorList } from '@/components/investors';
 import { PipelineKanban } from '@/components/pipeline';
 import { SequenceList } from '@/components/sequences';
@@ -115,8 +115,9 @@ export default function CampaignDetailPage() {
         </div>
 
         <div className="flex-1 overflow-auto">
-          <TabsContent value="overview" className="p-6">
+          <TabsContent value="overview" className="p-6 space-y-6">
             <CampaignOverview key={refreshKey} campaign={campaign} />
+            <CampaignRunner campaign={campaign} onSuccess={() => setRefreshKey((k) => k + 1)} />
           </TabsContent>
 
           <TabsContent value="investors" className="p-6">

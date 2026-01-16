@@ -1,90 +1,13 @@
 import { NextRequest } from 'next/server';
-import { 
-  successResponse, 
+import {
+  successResponse,
   withErrorHandling,
   NotFoundError,
   parseBody,
-  ValidationError,
 } from '@/lib/api/utils';
+import { validateUpdateSequence, validateCreateSequenceStep } from '@/lib/api/validators';
+import { createServiceClient } from '@/lib/supabase/server';
 import type { Sequence, SequenceStep } from '@/types';
-import { z } from 'zod';
-
-// Mock data
-const mockSequences: Sequence[] = [];
-const mockSteps: SequenceStep[] = [
-  {
-    id: 'step-1',
-    sequence_id: '1',
-    order: 1,
-    type: 'email',
-    delay_days: 0,
-    template_id: null,
-    content: 'Hi {{investor_first_name}}, I wanted to reach out about our Series A...',
-    subject: 'Quick intro - {{company_name}}',
-  },
-  {
-    id: 'step-2',
-    sequence_id: '1',
-    order: 2,
-    type: 'wait',
-    delay_days: 3,
-    template_id: null,
-    content: null,
-    subject: null,
-  },
-  {
-    id: 'step-3',
-    sequence_id: '1',
-    order: 3,
-    type: 'email',
-    delay_days: 0,
-    template_id: null,
-    content: 'Hi {{investor_first_name}}, just following up on my previous email...',
-    subject: 'Re: Quick intro - {{company_name}}',
-  },
-];
-
-const updateSequenceSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  status: z.enum(['draft', 'active', 'paused']).optional(),
-});
-
-const addStepSchema = z.object({
-  order: z.number().int().positive(),
-  type: z.enum(['email', 'linkedin', 'task', 'wait']),
-  delay_days: z.number().int().min(0).default(0),
-  template_id: z.string().uuid().optional(),
-  content: z.string().max(10000).optional(),
-  subject: z.string().max(200).optional(),
-});
-
-function validateUpdateSequence(data: unknown) {
-  const result = updateSequenceSchema.safeParse(data);
-  if (!result.success) {
-    const details: Record<string, string[]> = {};
-    result.error.issues.forEach((issue) => {
-      const path = issue.path.join('.') || 'root';
-      if (!details[path]) details[path] = [];
-      details[path].push(issue.message);
-    });
-    throw new ValidationError('Validation failed', details);
-  }
-  return result.data;
-}
-
-function validateAddStep(data: unknown) {
-  const result = addStepSchema.safeParse(data);
-  if (!result.success) {
-    const details: Record<string, string[]> = {};
-    result.error.issues.forEach((issue) => {
-      const path = issue.path.join('.') || 'root';
-      if (!details[path]) details[path] = [];
-      details[path].push(issue.message);
-    });
-    throw new ValidationError('Validation failed', details);
-  }
-  return result.data;
-}
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -94,24 +17,51 @@ interface RouteParams {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    
-    const sequence = mockSequences.find((s) => s.id === id);
-    if (!sequence) {
-      // Return mock sequence for demo
-      const demoSequence: Sequence & { steps: SequenceStep[] } = {
-        id: '1',
-        campaign_id: '1',
-        name: 'Initial Outreach',
-        status: 'active',
-        created_at: new Date().toISOString(),
-        steps: mockSteps.filter((step) => step.sequence_id === '1'),
-      };
-      return successResponse(demoSequence);
+    const supabase = createServiceClient();
+
+    // Get sequence
+    const { data: sequence, error: seqError } = await supabase
+      .from('sequences')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (seqError || !sequence) {
+      throw new NotFoundError('Sequence');
     }
 
-    const steps = mockSteps.filter((step) => step.sequence_id === id);
-    
-    return successResponse({ ...sequence, steps });
+    // Get steps for this sequence
+    const { data: steps, error: stepsError } = await supabase
+      .from('sequence_steps')
+      .select('*')
+      .eq('sequence_id', id)
+      .order('order', { ascending: true });
+
+    if (stepsError) {
+      console.error('Supabase error fetching sequence steps:', stepsError);
+      throw new Error('Failed to fetch sequence steps');
+    }
+
+    const sequenceWithSteps: Sequence & { steps: SequenceStep[] } = {
+      id: sequence.id,
+      campaign_id: sequence.campaign_id,
+      name: sequence.name,
+      status: sequence.status,
+      created_at: sequence.created_at,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      steps: (steps ?? []).map((step: any) => ({
+        id: step.id,
+        sequence_id: step.sequence_id,
+        order: step.order,
+        type: step.type,
+        delay_days: step.delay_days,
+        template_id: step.template_id,
+        content: step.content,
+        subject: step.subject,
+      })),
+    };
+
+    return successResponse(sequenceWithSteps);
   });
 }
 
@@ -120,33 +70,35 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
     const body = await parseBody(request, validateUpdateSequence);
-    
-    const sequenceIndex = mockSequences.findIndex((s) => s.id === id);
-    
-    // For demo, create if not exists
-    if (sequenceIndex === -1) {
-      const newSequence: Sequence = {
-        id,
-        campaign_id: '1',
-        name: body.name ?? 'Updated Sequence',
-        status: body.status ?? 'draft',
-        created_at: new Date().toISOString(),
-      };
-      mockSequences.push(newSequence);
-      return successResponse(newSequence);
-    }
+    const supabase = createServiceClient();
 
-    const existingSequence = mockSequences[sequenceIndex];
-    if (!existingSequence) {
-      throw new NotFoundError('Sequence');
+    // Build update object
+    const updateData: Record<string, unknown> = {};
+    if (body.name !== undefined) updateData.name = body.name;
+    if (body.status !== undefined) updateData.status = body.status;
+
+    const { data, error } = await supabase
+      .from('sequences')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error || !data) {
+      if (error?.code === 'PGRST116') {
+        throw new NotFoundError('Sequence');
+      }
+      console.error('Supabase error updating sequence:', error);
+      throw new Error('Failed to update sequence');
     }
 
     const updatedSequence: Sequence = {
-      ...existingSequence,
-      ...body,
+      id: data.id,
+      campaign_id: data.campaign_id,
+      name: data.name,
+      status: data.status,
+      created_at: data.created_at,
     };
-
-    mockSequences[sequenceIndex] = updatedSequence;
 
     return successResponse(updatedSequence);
   });
@@ -156,35 +108,87 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    
-    const sequenceIndex = mockSequences.findIndex((s) => s.id === id);
-    
-    if (sequenceIndex !== -1) {
-      mockSequences.splice(sequenceIndex, 1);
+    const supabase = createServiceClient();
+
+    // Check if sequence exists
+    const { data: existing } = await supabase
+      .from('sequences')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (!existing) {
+      throw new NotFoundError('Sequence');
+    }
+
+    // Delete associated steps first (if not using cascade)
+    await supabase
+      .from('sequence_steps')
+      .delete()
+      .eq('sequence_id', id);
+
+    // Delete the sequence
+    const { error } = await supabase
+      .from('sequences')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Supabase error deleting sequence:', error);
+      throw new Error('Failed to delete sequence');
     }
 
     return successResponse({ deleted: true });
   });
 }
 
-// POST /api/sequences/[id] - Add step to sequence (using POST on the resource)
+// POST /api/sequences/[id] - Add step to sequence
 export async function POST(request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    const body = await parseBody(request, validateAddStep);
+    const body = await parseBody(request, validateCreateSequenceStep);
+    const supabase = createServiceClient();
+
+    // Verify sequence exists
+    const { data: sequence } = await supabase
+      .from('sequences')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (!sequence) {
+      throw new NotFoundError('Sequence');
+    }
+
+    const { data, error } = await supabase
+      .from('sequence_steps')
+      .insert({
+        sequence_id: id,
+        order: body.order,
+        type: body.type,
+        delay_days: body.delay_days ?? 0,
+        template_id: body.template_id ?? null,
+        content: body.content ?? null,
+        subject: body.subject ?? null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error creating sequence step:', error);
+      throw new Error('Failed to add step to sequence');
+    }
 
     const newStep: SequenceStep = {
-      id: `step-${Date.now()}`,
-      sequence_id: id,
-      order: body.order,
-      type: body.type,
-      delay_days: body.delay_days,
-      template_id: body.template_id ?? null,
-      content: body.content ?? null,
-      subject: body.subject ?? null,
+      id: data.id,
+      sequence_id: data.sequence_id,
+      order: data.order,
+      type: data.type,
+      delay_days: data.delay_days,
+      template_id: data.template_id,
+      content: data.content,
+      subject: data.subject,
     };
-
-    mockSteps.push(newStep);
 
     return successResponse(newStep);
   });

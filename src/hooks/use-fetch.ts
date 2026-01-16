@@ -3,8 +3,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { ApiResponse } from '@/types';
 
+interface ApiMeta {
+  page?: number;
+  limit?: number;
+  total?: number;
+}
+
 interface UseFetchState<T> {
   data: T | null;
+  meta: ApiMeta | null;
   isLoading: boolean;
   error: Error | null;
 }
@@ -19,6 +26,7 @@ export function useFetch<T>(
 ) {
   const [state, setState] = useState<UseFetchState<T>>({
     data: null,
+    meta: null,
     isLoading: options.immediate ?? true,
     error: null,
   });
@@ -34,11 +42,11 @@ export function useFetch<T>(
         throw new Error(json.error.message);
       }
 
-      setState({ data: json.data, isLoading: false, error: null });
+      setState({ data: json.data, meta: json.meta ?? null, isLoading: false, error: null });
       return json.data;
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error');
-      setState({ data: null, isLoading: false, error });
+      setState({ data: null, meta: null, isLoading: false, error });
       throw error;
     }
   }, [url]);

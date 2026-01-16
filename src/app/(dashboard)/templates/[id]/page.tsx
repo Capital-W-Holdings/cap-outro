@@ -19,7 +19,7 @@ export default function TemplateDetailPage() {
   if (isNew) {
     return (
       <div className="flex flex-col h-full">
-        <div className="border-b border-dark-600 bg-dark-800 px-6 py-4">
+        <div className="border-b border-gray-200 bg-white px-6 py-4">
           <Link href="/templates">
             <Button variant="ghost" size="sm" leftIcon={<ArrowLeft className="w-4 h-4" />}>
               Templates
@@ -42,7 +42,7 @@ export default function TemplateDetailPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="border-b border-dark-600 bg-dark-800 px-6 py-4">
+      <div className="border-b border-gray-200 bg-white px-6 py-4">
         <Link href="/templates">
           <Button variant="ghost" size="sm" leftIcon={<ArrowLeft className="w-4 h-4" />}>
             Templates

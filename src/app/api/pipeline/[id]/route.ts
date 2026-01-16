@@ -1,15 +1,13 @@
 import { NextRequest } from 'next/server';
-import { 
-  successResponse, 
+import {
+  successResponse,
   withErrorHandling,
   NotFoundError,
   parseBody,
 } from '@/lib/api/utils';
 import { validateUpdatePipeline } from '@/lib/api/validators';
+import { createServiceClient } from '@/lib/supabase/server';
 import type { PipelineEntry } from '@/types';
-
-// Mock data reference
-const mockPipeline: PipelineEntry[] = [];
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -19,12 +17,33 @@ interface RouteParams {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    
-    const entry = mockPipeline.find(p => p.id === id);
-    
-    if (!entry) {
+    const supabase = createServiceClient();
+
+    const { data, error } = await supabase
+      .from('pipeline')
+      .select(`
+        *,
+        investor:investors(id, name, firm, email, title)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
       throw new NotFoundError('Pipeline entry');
     }
+
+    const entry: PipelineEntry = {
+      id: data.id,
+      campaign_id: data.campaign_id,
+      investor_id: data.investor_id,
+      stage: data.stage,
+      amount_soft: data.amount_soft,
+      amount_committed: data.amount_committed,
+      notes: data.notes,
+      last_activity_at: data.last_activity_at,
+      created_at: data.created_at,
+      investor: data.investor,
+    };
 
     return successResponse(entry);
   });
@@ -35,27 +54,46 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
     const body = await parseBody(request, validateUpdatePipeline);
-    
-    const entryIndex = mockPipeline.findIndex(p => p.id === id);
-    
-    if (entryIndex === -1) {
-      throw new NotFoundError('Pipeline entry');
-    }
+    const supabase = createServiceClient();
 
-    const existingEntry = mockPipeline[entryIndex];
-    if (!existingEntry) {
-      throw new NotFoundError('Pipeline entry');
-    }
-
-    const updatedEntry: PipelineEntry = {
-      ...existingEntry,
-      ...body,
+    // Build update object
+    const updateData: Record<string, unknown> = {
       last_activity_at: new Date().toISOString(),
     };
 
-    mockPipeline[entryIndex] = updatedEntry;
+    if (body.stage !== undefined) updateData.stage = body.stage;
+    if (body.amount_soft !== undefined) updateData.amount_soft = body.amount_soft;
+    if (body.amount_committed !== undefined) updateData.amount_committed = body.amount_committed;
+    if (body.notes !== undefined) updateData.notes = body.notes;
 
-    return successResponse(updatedEntry);
+    const { data, error } = await supabase
+      .from('pipeline')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error || !data) {
+      if (error?.code === 'PGRST116') {
+        throw new NotFoundError('Pipeline entry');
+      }
+      console.error('Supabase error updating pipeline:', error);
+      throw new Error('Failed to update pipeline entry');
+    }
+
+    const entry: PipelineEntry = {
+      id: data.id,
+      campaign_id: data.campaign_id,
+      investor_id: data.investor_id,
+      stage: data.stage,
+      amount_soft: data.amount_soft,
+      amount_committed: data.amount_committed,
+      notes: data.notes,
+      last_activity_at: data.last_activity_at,
+      created_at: data.created_at,
+    };
+
+    return successResponse(entry);
   });
 }
 
@@ -63,14 +101,28 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    
-    const entryIndex = mockPipeline.findIndex(p => p.id === id);
-    
-    if (entryIndex === -1) {
+    const supabase = createServiceClient();
+
+    // First check if entry exists
+    const { data: existing } = await supabase
+      .from('pipeline')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (!existing) {
       throw new NotFoundError('Pipeline entry');
     }
 
-    mockPipeline.splice(entryIndex, 1);
+    const { error } = await supabase
+      .from('pipeline')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Supabase error deleting pipeline entry:', error);
+      throw new Error('Failed to remove from pipeline');
+    }
 
     return successResponse({ deleted: true });
   });

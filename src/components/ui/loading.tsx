@@ -17,7 +17,7 @@ export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
 
   return (
     <Loader2
-      className={`animate-spin text-neutral-900 ${sizeStyles[size]} ${className}`}
+      className={`animate-spin text-black ${sizeStyles[size]} ${className}`}
     />
   );
 }
@@ -28,7 +28,7 @@ export function LoadingPage() {
     <div className="flex items-center justify-center min-h-[400px]">
       <div className="text-center">
         <Spinner size="lg" />
-        <p className="mt-4 text-neutral-500">Loading...</p>
+        <p className="mt-4 text-gray-500">Loading...</p>
       </div>
     </div>
   );
@@ -51,7 +51,7 @@ export interface SkeletonProps {
 export function Skeleton({ className = '' }: SkeletonProps) {
   return (
     <div
-      className={`animate-pulse bg-neutral-200 rounded ${className}`}
+      className={`animate-pulse bg-gray-200 rounded ${className}`}
       aria-hidden="true"
     />
   );
@@ -72,7 +72,7 @@ export function SkeletonText({ lines = 3 }: { lines?: number }) {
 
 export function SkeletonCard() {
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl p-4">
+    <div className="bg-white border border-gray-200 rounded-xl p-4">
       <div className="flex items-center gap-3 mb-4">
         <Skeleton className="w-10 h-10 rounded-full" />
         <div className="flex-1">
@@ -88,7 +88,7 @@ export function SkeletonCard() {
 export function SkeletonTable({ rows = 5 }: { rows?: number }) {
   return (
     <div className="space-y-3">
-      <div className="flex gap-4 pb-3 border-b border-neutral-200">
+      <div className="flex gap-4 pb-3 border-b border-gray-200">
         <Skeleton className="h-4 w-1/4" />
         <Skeleton className="h-4 w-1/4" />
         <Skeleton className="h-4 w-1/4" />

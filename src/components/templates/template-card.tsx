@@ -25,22 +25,22 @@ export function TemplateCard({ template, onEdit, onDelete, onDuplicate }: Templa
     <Card hover className="group">
       <div className="flex items-start gap-4">
         {/* Icon */}
-        <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-900 flex-shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-black flex items-center justify-center text-white flex-shrink-0">
           <Mail className="w-5 h-5" />
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-neutral-900 truncate">{template.name}</h3>
+            <h3 className="font-semibold text-black truncate">{template.name}</h3>
             <span className={`px-2 py-0.5 rounded text-xs font-medium ${config.color}`}>
               {config.label}
             </span>
           </div>
 
-          <p className="text-sm text-neutral-500 truncate mb-2">{template.subject}</p>
+          <p className="text-sm text-gray-600 truncate mb-2">{template.subject}</p>
 
-          <div className="flex items-center gap-4 text-xs text-neutral-500">
+          <div className="flex items-center gap-4 text-xs text-gray-500">
             <span>{template.variables.length} variables</span>
             <span>Created {new Date(template.created_at).toLocaleDateString()}</span>
           </div>
@@ -51,7 +51,7 @@ export function TemplateCard({ template, onEdit, onDelete, onDuplicate }: Templa
           {onEdit && (
             <button
               onClick={() => onEdit(template)}
-              className="p-2 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded transition-colors"
+              className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded transition-colors"
               title="Edit"
             >
               <Edit className="w-4 h-4" />
@@ -60,7 +60,7 @@ export function TemplateCard({ template, onEdit, onDelete, onDuplicate }: Templa
           {onDuplicate && (
             <button
               onClick={() => onDuplicate(template)}
-              className="p-2 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded transition-colors"
+              className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded transition-colors"
               title="Duplicate"
             >
               <Copy className="w-4 h-4" />
@@ -69,7 +69,7 @@ export function TemplateCard({ template, onEdit, onDelete, onDuplicate }: Templa
           {onDelete && (
             <button
               onClick={() => onDelete(template)}
-              className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+              className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded transition-colors"
               title="Delete"
             >
               <Trash2 className="w-4 h-4" />

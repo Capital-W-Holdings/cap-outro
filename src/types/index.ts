@@ -22,6 +22,37 @@ export type PipelineStage =
 export type TemplateType = 'initial' | 'followup' | 'intro_request' | 'update';
 export type RelationshipStrength = 'strong' | 'medium' | 'weak';
 export type WarmPathSource = 'linkedin' | 'email' | 'manual';
+export type EmailProvider = 'gmail' | 'outlook' | 'resend';
+export type EmailAccountStatus = 'active' | 'disconnected' | 'error';
+export type NotificationType =
+  | 'email_opened'
+  | 'email_replied'
+  | 'email_bounced'
+  | 'meeting_scheduled'
+  | 'stage_changed'
+  | 'campaign_started'
+  | 'campaign_completed'
+  | 'investor_added'
+  | 'system';
+
+export type ReferralStatus = 'pending' | 'signed_up' | 'converted' | 'expired';
+
+// Referral
+export interface Referral {
+  id: string;
+  org_id: string;
+  referrer_user_id: string;
+  code: string;
+  email: string | null;
+  name: string | null;
+  status: ReferralStatus;
+  signed_up_at: string | null;
+  converted_at: string | null;
+  reward_granted: boolean;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  expires_at: string | null;
+}
 
 // Organization
 export interface OrganizationSettings {
@@ -53,6 +84,48 @@ export interface User {
   name: string;
   role: UserRole;
   connected_accounts: ConnectedAccount[];
+  created_at: string;
+}
+
+// Email Account (for sending emails)
+export interface EmailAccount {
+  id: string;
+  user_id: string;
+  org_id: string;
+  provider: EmailProvider;
+  email: string;
+  name: string;
+  is_default: boolean;
+  status: EmailAccountStatus;
+  daily_limit: number;
+  emails_sent_today: number;
+  last_used_at: string | null;
+  access_token?: string; // Only returned when needed
+  refresh_token?: string; // Only returned when needed
+  token_expires_at?: string;
+  created_at: string;
+}
+
+export interface EmailAccountStats {
+  emails_sent_today: number;
+  emails_sent_week: number;
+  emails_sent_month: number;
+  open_rate: number;
+  reply_rate: number;
+  bounce_rate: number;
+}
+
+// Notification
+export interface Notification {
+  id: string;
+  org_id: string;
+  user_id: string | null;
+  type: NotificationType;
+  title: string;
+  message: string;
+  link: string | null;
+  metadata: Record<string, unknown>;
+  is_read: boolean;
   created_at: string;
 }
 
@@ -89,6 +162,8 @@ export interface WarmPath {
 export interface Investor {
   id: string;
   org_id: string;
+  user_id: string | null;
+  is_platform: boolean;
   name: string;
   email: string | null;
   firm: string | null;
@@ -153,6 +228,14 @@ export interface PipelineEntry {
   notes: string | null;
   last_activity_at: string;
   created_at: string;
+  // Joined investor data (optional, populated via join)
+  investor?: {
+    id: string;
+    name: string;
+    firm: string | null;
+    email: string | null;
+    title: string | null;
+  };
 }
 
 // Email Template

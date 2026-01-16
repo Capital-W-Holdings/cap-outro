@@ -32,20 +32,6 @@ export const createInvestorSchema = z.object({
   sectors: z.array(z.string()).optional(),
 });
 
-export const updateInvestorSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  email: z.string().email('Invalid email').optional().or(z.literal('')).or(z.null()),
-  firm: z.string().max(100).optional().or(z.null()),
-  title: z.string().max(100).optional().or(z.null()),
-  linkedin_url: z.string().url('Invalid URL').optional().or(z.literal('')).or(z.null()),
-  check_size_min: z.number().positive().optional().or(z.null()),
-  check_size_max: z.number().positive().optional().or(z.null()),
-  stages: z.array(z.string()).optional(),
-  sectors: z.array(z.string()).optional(),
-  fit_score: z.number().min(0).max(100).optional().or(z.null()),
-  notes: z.string().max(5000).optional().or(z.null()),
-});
-
 export const bulkImportSchema = z.object({
   investors: z.array(
     z.object({
@@ -107,16 +93,66 @@ export function createValidator<T>(schema: z.ZodSchema<T>) {
 export const validateCreateCampaign = createValidator(createCampaignSchema);
 export const validateUpdateCampaign = createValidator(updateCampaignSchema);
 export const validateCreateInvestor = createValidator(createInvestorSchema);
-export const validateUpdateInvestor = createValidator(updateInvestorSchema);
 export const validateBulkImport = createValidator(bulkImportSchema);
 export const validateUpdatePipeline = createValidator(updatePipelineSchema);
 export const validateCreateTemplate = createValidator(createTemplateSchema);
+
+// Sequence schemas
+export const createSequenceSchema = z.object({
+  campaign_id: z.string().uuid('Invalid campaign ID'),
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+});
+
+export const updateSequenceSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  status: z.enum(['draft', 'active', 'paused']).optional(),
+});
+
+export const createSequenceStepSchema = z.object({
+  order: z.number().int().positive(),
+  type: z.enum(['email', 'linkedin', 'task', 'wait']),
+  delay_days: z.number().int().min(0).default(0),
+  template_id: z.string().uuid().optional().nullable(),
+  content: z.string().max(10000).optional().nullable(),
+  subject: z.string().max(200).optional().nullable(),
+});
+
+export const updateTemplateSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  subject: z.string().min(1).max(200).optional(),
+  body: z.string().min(1).max(10000).optional(),
+  type: z.enum(['initial', 'followup', 'intro_request', 'update']).optional(),
+});
+
+// Referral schemas
+export const createReferralSchema = z.object({
+  email: z.string().email('Invalid email').optional(),
+  name: z.string().max(100).optional(),
+});
+
+export const updateReferralSchema = z.object({
+  status: z.enum(['pending', 'signed_up', 'converted', 'expired']).optional(),
+  reward_granted: z.boolean().optional(),
+});
+
+// Export validators
+export const validateCreateSequence = createValidator(createSequenceSchema);
+export const validateUpdateSequence = createValidator(updateSequenceSchema);
+export const validateCreateSequenceStep = createValidator(createSequenceStepSchema);
+export const validateUpdateTemplate = createValidator(updateTemplateSchema);
+export const validateCreateReferral = createValidator(createReferralSchema);
+export const validateUpdateReferral = createValidator(updateReferralSchema);
 
 // Type exports
 export type CreateCampaignInput = z.infer<typeof createCampaignSchema>;
 export type UpdateCampaignInput = z.infer<typeof updateCampaignSchema>;
 export type CreateInvestorInput = z.infer<typeof createInvestorSchema>;
-export type UpdateInvestorInput = z.infer<typeof updateInvestorSchema>;
 export type BulkImportInput = z.infer<typeof bulkImportSchema>;
 export type UpdatePipelineInput = z.infer<typeof updatePipelineSchema>;
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>;
+export type CreateSequenceInput = z.infer<typeof createSequenceSchema>;
+export type UpdateSequenceInput = z.infer<typeof updateSequenceSchema>;
+export type CreateSequenceStepInput = z.infer<typeof createSequenceStepSchema>;
+export type UpdateTemplateInput = z.infer<typeof updateTemplateSchema>;
+export type CreateReferralInput = z.infer<typeof createReferralSchema>;
+export type UpdateReferralInput = z.infer<typeof updateReferralSchema>;

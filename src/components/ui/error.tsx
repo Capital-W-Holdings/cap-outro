@@ -15,11 +15,11 @@ export function ErrorState({ error, onRetry, showHome = false }: ErrorStateProps
 
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center">
-      <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
+      <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
         <AlertCircle className="w-6 h-6 text-red-500" />
       </div>
-      <h3 className="text-lg font-semibold text-white mb-2">Something went wrong</h3>
-      <p className="text-gray-400 mb-6 max-w-md">{message}</p>
+      <h3 className="text-lg font-semibold text-black mb-2">Something went wrong</h3>
+      <p className="text-gray-500 mb-6 max-w-md">{message}</p>
       <div className="flex gap-3">
         {onRetry && (
           <Button variant="primary" onClick={onRetry} leftIcon={<RefreshCw className="w-4 h-4" />}>
@@ -79,9 +79,9 @@ export function ErrorToast({ message, onDismiss }: ErrorToastProps) {
 export function NotFoundState({ resource = 'Page' }: { resource?: string }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-      <div className="text-6xl font-bold text-dark-600 mb-4">404</div>
-      <h2 className="text-xl font-semibold text-white mb-2">{resource} not found</h2>
-      <p className="text-gray-400 mb-6">The {resource.toLowerCase()} you&apos;re looking for doesn&apos;t exist.</p>
+      <div className="text-6xl font-bold text-gray-300 mb-4">404</div>
+      <h2 className="text-xl font-semibold text-black mb-2">{resource} not found</h2>
+      <p className="text-gray-500 mb-6">The {resource.toLowerCase()} you&apos;re looking for doesn&apos;t exist.</p>
       <Link href="/">
         <Button variant="primary" leftIcon={<Home className="w-4 h-4" />}>
           Go home

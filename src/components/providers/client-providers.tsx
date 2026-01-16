@@ -2,7 +2,7 @@
 
 import { type ReactNode } from 'react';
 import { ErrorBoundary, OfflineIndicator } from '@/components/error';
-import { SkipLink } from '@/components/ui';
+import { SkipLink, ToastProvider } from '@/components/ui';
 
 interface ClientProvidersProps {
   children: ReactNode;
@@ -11,9 +11,11 @@ interface ClientProvidersProps {
 export function ClientProviders({ children }: ClientProvidersProps) {
   return (
     <ErrorBoundary>
-      <SkipLink />
-      <OfflineIndicator />
-      {children}
+      <ToastProvider>
+        <SkipLink />
+        <OfflineIndicator />
+        {children}
+      </ToastProvider>
     </ErrorBoundary>
   );
 }

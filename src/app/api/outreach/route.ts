@@ -1,49 +1,17 @@
 import { NextRequest } from 'next/server';
-import { 
-  successResponse, 
+import {
+  successResponse,
   withErrorHandling,
   parseBody,
   ValidationError,
 } from '@/lib/api/utils';
-import { sendEmail, prepareTrackedEmail } from '@/lib/email';
-import type { Outreach, OutreachStatus } from '@/types';
+import { sendEmail, prepareTrackedEmail, GmailProvider } from '@/lib/email';
+import { createServiceClient } from '@/lib/supabase/server';
+import type { Outreach, OutreachStatus, EmailProvider } from '@/types';
 import { z } from 'zod';
 
-// Mock data for MVP
-const mockOutreach: Outreach[] = [
-  {
-    id: '1',
-    campaign_id: '1',
-    investor_id: '1',
-    sequence_id: '1',
-    step_id: 'step-1',
-    type: 'email',
-    status: 'sent',
-    scheduled_at: null,
-    sent_at: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-    opened_at: new Date(Date.now() - 43200000).toISOString(), // 12 hours ago
-    replied_at: null,
-    content: 'Hi Sarah, I wanted to reach out about our Series A...',
-    subject: 'Quick intro - Cap Outro',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    campaign_id: '1',
-    investor_id: '2',
-    sequence_id: null,
-    step_id: null,
-    type: 'email',
-    status: 'scheduled',
-    scheduled_at: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
-    sent_at: null,
-    opened_at: null,
-    replied_at: null,
-    content: 'Hi Mike, following up on our previous conversation...',
-    subject: 'Following up - Cap Outro',
-    created_at: new Date().toISOString(),
-  },
-];
+// Mock data for MVP (used when database isn't available)
+const mockOutreach: Outreach[] = [];
 
 const createOutreachSchema = z.object({
   campaign_id: z.string().uuid('Invalid campaign ID'),
@@ -55,6 +23,7 @@ const createOutreachSchema = z.object({
   subject: z.string().max(200).optional(),
   scheduled_at: z.string().datetime().optional(),
   send_now: z.boolean().optional(),
+  email_account_id: z.string().uuid().optional(),
 });
 
 function validateCreateOutreach(data: unknown) {
@@ -103,9 +72,62 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return withErrorHandling(async () => {
     const body = await parseBody(request, validateCreateOutreach);
+    const supabase = createServiceClient();
 
     const trackingId = crypto.randomUUID();
-    
+
+    // Get the investor to get their email
+    let investorEmail: string | null = null;
+    let investorName: string | null = null;
+
+    const { data: investor } = await supabase
+      .from('investors')
+      .select('email, name')
+      .eq('id', body.investor_id)
+      .single();
+
+    if (investor) {
+      investorEmail = investor.email;
+      investorName = investor.name;
+    }
+
+    // Get the email account for sending
+    let fromEmail: string | null = null;
+    let fromName: string | null = null;
+    let emailAccountId: string | null = null;
+    let emailAccountProvider: EmailProvider | null = null;
+    let emailAccountTokens: { access_token: string; refresh_token: string | null; token_expires_at: string | null } | null = null;
+
+    if (body.email_account_id) {
+      const { data: emailAccount } = await supabase
+        .from('email_accounts')
+        .select('id, email, name, provider, emails_sent_today, daily_limit, access_token, refresh_token, token_expires_at')
+        .eq('id', body.email_account_id)
+        .single();
+
+      if (emailAccount) {
+        fromEmail = emailAccount.email;
+        fromName = emailAccount.name;
+        emailAccountId = emailAccount.id;
+        emailAccountProvider = emailAccount.provider as EmailProvider;
+
+        if (emailAccount.access_token) {
+          emailAccountTokens = {
+            access_token: emailAccount.access_token,
+            refresh_token: emailAccount.refresh_token,
+            token_expires_at: emailAccount.token_expires_at,
+          };
+        }
+
+        // Check daily limit
+        if (emailAccount.emails_sent_today >= emailAccount.daily_limit) {
+          throw new ValidationError('Daily email limit reached for this account', {
+            email_account_id: ['Daily limit reached'],
+          });
+        }
+      }
+    }
+
     const newOutreach: Outreach = {
       id: `outreach-${Date.now()}`,
       campaign_id: body.campaign_id,
@@ -125,23 +147,71 @@ export async function POST(request: NextRequest) {
 
     // If sending now and it's an email, actually send it
     if (body.send_now && body.type === 'email') {
-      // TODO: Get investor email from database
-      const investorEmail = 'investor@example.com'; // Mock
-      
+      if (!investorEmail) {
+        throw new ValidationError('Investor does not have an email address', {
+          investor_id: ['No email address found'],
+        });
+      }
+
       // Prepare email with tracking
       const trackedContent = prepareTrackedEmail(body.content, trackingId);
-      
-      const result = await sendEmail({
-        to: { email: investorEmail },
+
+      const emailOptions = {
+        to: { email: investorEmail, name: investorName ?? undefined },
+        from: fromEmail ? { email: fromEmail, name: fromName ?? undefined } : undefined,
         subject: body.subject ?? 'No Subject',
         html: trackedContent,
         trackingId,
-      });
+      };
+
+      let result;
+
+      // Use Gmail provider for Gmail accounts with OAuth tokens
+      if (emailAccountProvider === 'gmail' && emailAccountTokens) {
+        const gmailProvider = new GmailProvider(
+          emailAccountTokens,
+          async (newTokens) => {
+            // Update tokens in database when refreshed
+            if (emailAccountId) {
+              await supabase
+                .from('email_accounts')
+                .update({
+                  access_token: newTokens.access_token,
+                  token_expires_at: newTokens.expires_at,
+                })
+                .eq('id', emailAccountId);
+            }
+          }
+        );
+        result = await gmailProvider.send(emailOptions);
+      } else {
+        // Use default Resend provider
+        result = await sendEmail(emailOptions);
+      }
 
       if (!result.success) {
         console.error('Failed to send email:', result.error);
         newOutreach.status = 'scheduled'; // Keep as scheduled if send failed
         newOutreach.sent_at = null;
+      } else {
+        // Update email account sent count
+        if (emailAccountId) {
+          const { data: currentAccount } = await supabase
+            .from('email_accounts')
+            .select('emails_sent_today')
+            .eq('id', emailAccountId)
+            .single();
+
+          if (currentAccount) {
+            await supabase
+              .from('email_accounts')
+              .update({
+                emails_sent_today: currentAccount.emails_sent_today + 1,
+                last_used_at: new Date().toISOString(),
+              })
+              .eq('id', emailAccountId);
+          }
+        }
       }
     }
 

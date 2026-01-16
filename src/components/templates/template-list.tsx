@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { Mail } from 'lucide-react';
-import { useTemplates } from '@/hooks';
+import { useTemplates, useDeleteTemplateById, useDuplicateTemplate } from '@/hooks';
 import { TemplateCard } from './template-card';
 import { SkeletonCard, ErrorState, EmptyState, Select, type SelectOption } from '@/components/ui';
+import { useToast } from '@/components/ui/toast';
 import type { EmailTemplate, TemplateType } from '@/types';
 
 interface TemplateListProps {
@@ -23,6 +24,31 @@ const typeOptions: SelectOption[] = [
 export function TemplateList({ onEdit, onCreateTemplate }: TemplateListProps) {
   const [typeFilter, setTypeFilter] = useState<TemplateType | ''>('');
   const { data: templates, isLoading, error, refetch } = useTemplates(typeFilter || undefined);
+  const { deleteTemplate, isLoading: isDeleting } = useDeleteTemplateById();
+  const { duplicateTemplate, isLoading: isDuplicating } = useDuplicateTemplate();
+  const { addToast } = useToast();
+
+  const handleDelete = async (template: EmailTemplate) => {
+    if (!confirm(`Delete "${template.name}"? This cannot be undone.`)) return;
+
+    try {
+      await deleteTemplate(template.id);
+      addToast(`Template "${template.name}" deleted`, 'success');
+      refetch();
+    } catch {
+      addToast('Failed to delete template', 'error');
+    }
+  };
+
+  const handleDuplicate = async (template: EmailTemplate) => {
+    try {
+      const newTemplate = await duplicateTemplate(template);
+      addToast(`Template duplicated as "${newTemplate.name}"`, 'success');
+      refetch();
+    } catch {
+      addToast('Failed to duplicate template', 'error');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -48,13 +74,24 @@ export function TemplateList({ onEdit, onCreateTemplate }: TemplateListProps) {
           onChange={(e) => setTypeFilter(e.target.value as TemplateType | '')}
           className="w-48"
         />
-        
+
         <div className="flex-1" />
-        
-        <div className="text-sm text-gray-400">
+
+        <div className="text-sm text-gray-500">
           {templates?.length ?? 0} template{templates?.length !== 1 ? 's' : ''}
         </div>
       </div>
+
+      {/* Loading overlay for delete/duplicate */}
+      {(isDeleting || isDuplicating) && (
+        <div className="fixed inset-0 bg-black/20 z-40 flex items-center justify-center">
+          <div className="bg-white rounded-lg px-6 py-4 shadow-lg">
+            <p className="text-gray-700">
+              {isDeleting ? 'Deleting template...' : 'Duplicating template...'}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* List */}
       {!templates || templates.length === 0 ? (
@@ -74,17 +111,8 @@ export function TemplateList({ onEdit, onCreateTemplate }: TemplateListProps) {
               key={template.id}
               template={template}
               onEdit={onEdit}
-              onDelete={async (t) => {
-                if (confirm('Delete this template?')) {
-                  // TODO: Use delete mutation
-                  console.log('Delete:', t.id);
-                  refetch();
-                }
-              }}
-              onDuplicate={(t) => {
-                // TODO: Duplicate template
-                console.log('Duplicate:', t.id);
-              }}
+              onDelete={handleDelete}
+              onDuplicate={handleDuplicate}
             />
           ))}
         </div>

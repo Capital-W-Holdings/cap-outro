@@ -3,34 +3,63 @@ import {
   successResponse,
   withErrorHandling,
   parseBody,
-  AppError,
 } from '@/lib/api/utils';
 import { validateCreateCampaign } from '@/lib/api/validators';
 import { createServiceClient } from '@/lib/supabase/server';
+import type { Campaign } from '@/types';
 
-// Demo org ID for unauthenticated users
-const DEMO_ORG_ID = '00000000-0000-0000-0000-000000000001';
+// Default org for MVP - in production this comes from auth
+const DEFAULT_ORG_ID = '00000000-0000-0000-0000-000000000001';
 
 // GET /api/campaigns - List all campaigns
 export async function GET(request: NextRequest) {
   return withErrorHandling(async () => {
-    const supabase = createServiceClient();
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') ?? '1', 10);
-    const limit = parseInt(searchParams.get('limit') ?? '10', 10);
-    const offset = (page - 1) * limit;
+    const limit = parseInt(searchParams.get('limit') ?? '50', 10);
+    const status = searchParams.get('status');
 
-    const { data, error, count } = await supabase
+    const supabase = createServiceClient();
+
+    let query = supabase
       .from('campaigns')
       .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .eq('org_id', DEFAULT_ORG_ID)
+      .order('created_at', { ascending: false });
 
-    if (error) {
-      throw new AppError('INTERNAL_ERROR', error.message);
+    // Filter by status if provided
+    if (status) {
+      query = query.eq('status', status);
     }
 
-    return successResponse(data ?? [], {
+    // Apply pagination
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+    query = query.range(from, to);
+
+    const { data, error, count } = await query;
+
+    if (error) {
+      console.error('Supabase error fetching campaigns:', error);
+      throw new Error('Failed to fetch campaigns');
+    }
+
+    // Map to Campaign type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const campaigns: Campaign[] = (data ?? []).map((row: any) => ({
+      id: row.id,
+      org_id: row.org_id,
+      name: row.name,
+      status: row.status,
+      raise_amount: row.raise_amount,
+      raise_type: row.raise_type,
+      sector: row.sector ?? [],
+      deck_url: row.deck_url,
+      settings: row.settings ?? {},
+      created_at: row.created_at,
+    }));
+
+    return successResponse(campaigns, {
       page,
       limit,
       total: count ?? 0,
@@ -41,16 +70,13 @@ export async function GET(request: NextRequest) {
 // POST /api/campaigns - Create a new campaign
 export async function POST(request: NextRequest) {
   return withErrorHandling(async () => {
-    const supabase = createServiceClient();
     const body = await parseBody(request, validateCreateCampaign);
-
-    // Ensure demo org exists
-    await ensureDemoOrg(supabase);
+    const supabase = createServiceClient();
 
     const { data, error } = await supabase
       .from('campaigns')
       .insert({
-        org_id: DEMO_ORG_ID,
+        org_id: DEFAULT_ORG_ID,
         name: body.name,
         status: 'draft',
         raise_amount: body.raise_amount ?? null,
@@ -63,27 +89,23 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      throw new AppError('INTERNAL_ERROR', error.message);
+      console.error('Supabase error creating campaign:', error);
+      throw new Error('Failed to create campaign');
     }
 
-    return successResponse(data);
+    const newCampaign: Campaign = {
+      id: data.id,
+      org_id: data.org_id,
+      name: data.name,
+      status: data.status,
+      raise_amount: data.raise_amount,
+      raise_type: data.raise_type,
+      sector: data.sector ?? [],
+      deck_url: data.deck_url,
+      settings: data.settings ?? {},
+      created_at: data.created_at,
+    };
+
+    return successResponse(newCampaign);
   });
-}
-
-// Helper to ensure demo organization exists
-async function ensureDemoOrg(supabase: ReturnType<typeof createServiceClient>) {
-  const { data } = await supabase
-    .from('organizations')
-    .select('id')
-    .eq('id', DEMO_ORG_ID)
-    .single();
-
-  if (!data) {
-    await supabase.from('organizations').insert({
-      id: DEMO_ORG_ID,
-      name: 'Demo Organization',
-      slug: 'demo-org',
-      plan: 'free',
-    });
-  }
 }

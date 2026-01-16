@@ -95,7 +95,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">
+        <h2 className="text-xl font-semibold text-black">
           {isEdit ? 'Edit Template' : 'Create Template'}
         </h2>
         <div className="flex items-center gap-2">
@@ -152,24 +152,24 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
             <Card>
               <div className="mb-4">
                 <p className="text-xs text-gray-500 mb-1">Subject</p>
-                <p className="text-white font-medium">{preview.subject || 'No subject'}</p>
+                <p className="text-black font-medium">{preview.subject || 'No subject'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Body</p>
                 <div
-                  className="prose prose-invert prose-sm max-w-none"
+                  className="prose prose-sm max-w-none text-black"
                   dangerouslySetInnerHTML={{ __html: preview.body || '<p class="text-gray-500">No content</p>' }}
                 />
               </div>
             </Card>
           ) : (
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Email Body
               </label>
               <textarea
                 id="template-body"
-                className="w-full px-3 py-2 bg-dark-700 border border-dark-500 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-transparent resize-none font-mono text-sm"
+                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none font-mono text-sm"
                 rows={15}
                 placeholder="<p>Hi {{investor_first_name}},</p>..."
                 value={body}
@@ -186,8 +186,8 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
         <div className="space-y-4">
           <Card>
             <div className="flex items-center gap-2 mb-4">
-              <Variable className="w-4 h-4 text-brand-gold" />
-              <h3 className="font-medium text-white">Variables</h3>
+              <Variable className="w-4 h-4 text-black" />
+              <h3 className="font-medium text-black">Variables</h3>
             </div>
 
             <div className="space-y-3">
@@ -196,7 +196,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
                 <div className="flex flex-wrap gap-1">
                   {variables.length > 0 ? (
                     variables.map((v) => (
-                      <span key={v} className="px-2 py-0.5 bg-brand-gold/10 text-brand-gold text-xs rounded">
+                      <span key={v} className="px-2 py-0.5 bg-gray-100 text-black text-xs rounded">
                         {v}
                       </span>
                     ))
@@ -206,16 +206,16 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
                 </div>
               </div>
 
-              <div className="border-t border-dark-600 pt-3">
+              <div className="border-t border-gray-200 pt-3">
                 <p className="text-xs text-gray-500 mb-2">Available variables</p>
                 <div className="space-y-1 max-h-64 overflow-y-auto">
                   {Object.keys(sampleVariables).map((v) => (
                     <button
                       key={v}
                       onClick={() => insertVariable(v)}
-                      className="flex items-center justify-between w-full px-2 py-1.5 text-left text-sm rounded hover:bg-dark-600 transition-colors group"
+                      className="flex items-center justify-between w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-100 transition-colors group"
                     >
-                      <code className="text-gray-300">{`{{${v}}}`}</code>
+                      <code className="text-gray-700">{`{{${v}}}`}</code>
                       <span className="text-xs text-gray-500 opacity-0 group-hover:opacity-100">
                         Insert
                       </span>
@@ -227,8 +227,8 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
           </Card>
 
           <Card>
-            <h3 className="font-medium text-white mb-2">Tips</h3>
-            <ul className="text-sm text-gray-400 space-y-1">
+            <h3 className="font-medium text-black mb-2">Tips</h3>
+            <ul className="text-sm text-gray-600 space-y-1">
               <li>• Keep subject lines under 50 characters</li>
               <li>• Personalize with investor name and firm</li>
               <li>• Include a clear call-to-action</li>

@@ -18,27 +18,15 @@ export default function SignupPage() {
     setError(null);
     setIsLoading(true);
 
-    // TODO: Implement actual Supabase auth
-    // For MVP demo, just redirect to dashboard
     try {
       // Basic validation
       if (password.length < 8) {
         throw new Error('Password must be at least 8 characters');
       }
 
-      // Simulate auth delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // In production:
-      // const supabase = createClient();
-      // const { error } = await supabase.auth.signUp({ 
-      //   email, 
-      //   password,
-      //   options: { data: { name } }
-      // });
-      // if (error) throw error;
-
-      router.push('/campaigns');
+      // Demo mode - just redirect to dashboard
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      router.push('/investors');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign up');
     } finally {
@@ -49,8 +37,8 @@ export default function SignupPage() {
   return (
     <Card padding="lg">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-neutral-900 font-mono">Create your account</h1>
-        <p className="text-neutral-500 mt-2">Start closing your round faster</p>
+        <h1 className="font-mono text-2xl font-bold text-black">Create your account</h1>
+        <p className="text-gray-500 mt-2">Start closing your round faster</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -100,16 +88,16 @@ export default function SignupPage() {
       </form>
 
       <div className="mt-6 text-center text-sm">
-        <span className="text-neutral-500">Already have an account? </span>
-        <Link href="/login" className="text-neutral-900 font-medium hover:underline">
+        <span className="text-gray-500">Already have an account? </span>
+        <Link href="/login" className="text-black font-medium hover:underline">
           Sign in
         </Link>
       </div>
 
       {/* Demo notice */}
-      <div className="mt-8 p-3 bg-neutral-50 border border-neutral-200 rounded-lg text-center">
-        <p className="text-xs text-neutral-500">
-          <span className="text-neutral-700 font-medium">Demo Mode:</span> Enter any details to continue
+      <div className="mt-8 p-3 bg-gray-100 border border-gray-200 text-center">
+        <p className="text-xs text-gray-600">
+          <span className="font-mono font-bold">Demo Mode:</span> Enter any details to continue
         </p>
       </div>
     </Card>

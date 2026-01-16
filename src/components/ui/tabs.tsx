@@ -32,7 +32,7 @@ interface TabsListProps {
 
 export function TabsList({ children, className = '' }: TabsListProps) {
   return (
-    <div className={`flex items-center gap-1 bg-dark-800 p-1 rounded-lg ${className}`}>
+    <div className={`flex items-center gap-1 bg-gray-100 p-1 rounded-lg ${className}`}>
       {children}
     </div>
   );
@@ -55,9 +55,9 @@ export function TabsTrigger({ value, children, className = '' }: TabsTriggerProp
       onClick={() => context.setActiveTab(value)}
       className={`
         px-4 py-2 text-sm font-medium rounded-md transition-colors
-        ${isActive 
-          ? 'bg-dark-600 text-white' 
-          : 'text-gray-400 hover:text-white hover:bg-dark-700'
+        ${isActive
+          ? 'bg-white text-black shadow-sm'
+          : 'text-gray-500 hover:text-black hover:bg-gray-50'
         }
         ${className}
       `}

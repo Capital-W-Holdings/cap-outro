@@ -36,6 +36,7 @@ export function useCreateOutreach() {
     subject?: string;
     scheduled_at?: string;
     send_now?: boolean;
+    email_account_id?: string;
   }>('/api/outreach', 'POST');
 }
 

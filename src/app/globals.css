@@ -1,38 +1,66 @@
 @import "tailwindcss";
 
 @theme {
-  --font-family-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-family-mono: "Space Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  /* Velocity.house inspired palette - minimal black/white */
+  --color-primary: #0a0a0a;
+  --color-secondary: #171717;
+  --color-accent: #262626;
+  --color-muted: #737373;
+  --color-border: #e5e5e5;
+  --color-background: #fafafa;
+  --color-surface: #ffffff;
+
+  /* Legacy support */
+  --color-brand-gold: #0a0a0a;
+  --color-brand-gold-light: #262626;
+  --color-brand-gold-dark: #000000;
+  --color-dark-900: #fafafa;
+  --color-dark-800: #ffffff;
+  --color-dark-700: #f5f5f5;
+  --color-dark-600: #e5e5e5;
+  --color-dark-500: #d4d4d4;
+
+  /* Typography - Space Mono for display, Inter for body */
+  --font-family-mono: "Space Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-family-sans: "Inter", "Instrument Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  background-color: #ffffff;
-  color: #171717;
+  background-color: var(--color-background);
+  color: var(--color-primary);
+  font-family: var(--font-family-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: var(--font-family-sans);
 }
 
-/* Custom scrollbar */
+/* Headings use Space Mono */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-mono);
+  letter-spacing: -0.02em;
+}
+
+/* Custom scrollbar - light theme */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #f5f5f5;
+  background-color: var(--color-background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #d4d4d4;
+  background-color: var(--color-border);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #a3a3a3;
+  background-color: var(--color-muted);
 }
 
 /* Animations */
@@ -51,6 +79,13 @@ body {
   animation: animateIn 0.3s ease-out;
 }
 
-.font-mono {
+.slide-in-from-bottom-2 {
+  --tw-enter-translate-y: 0.5rem;
+}
+
+/* Velocity.house style markers */
+.marker {
   font-family: var(--font-family-mono);
+  color: var(--color-muted);
+  font-size: 0.75rem;
 }

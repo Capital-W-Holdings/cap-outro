@@ -1,38 +1,14 @@
 import { NextRequest } from 'next/server';
-import { 
-  successResponse, 
+import {
+  successResponse,
   withErrorHandling,
   NotFoundError,
   parseBody,
-  ValidationError,
 } from '@/lib/api/utils';
+import { validateUpdateTemplate } from '@/lib/api/validators';
 import { extractTemplateVariables } from '@/lib/email';
+import { createServiceClient } from '@/lib/supabase/server';
 import type { EmailTemplate } from '@/types';
-import { z } from 'zod';
-
-// Mock data reference
-const mockTemplates: EmailTemplate[] = [];
-
-const updateTemplateSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  subject: z.string().min(1).max(200).optional(),
-  body: z.string().min(1).max(10000).optional(),
-  type: z.enum(['initial', 'followup', 'intro_request', 'update']).optional(),
-});
-
-function validateUpdateTemplate(data: unknown) {
-  const result = updateTemplateSchema.safeParse(data);
-  if (!result.success) {
-    const details: Record<string, string[]> = {};
-    result.error.issues.forEach((issue) => {
-      const path = issue.path.join('.') || 'root';
-      if (!details[path]) details[path] = [];
-      details[path].push(issue.message);
-    });
-    throw new ValidationError('Validation failed', details);
-  }
-  return result.data;
-}
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -42,12 +18,28 @@ interface RouteParams {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    
-    const template = mockTemplates.find((t) => t.id === id);
-    
-    if (!template) {
+    const supabase = createServiceClient();
+
+    const { data, error } = await supabase
+      .from('email_templates')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
       throw new NotFoundError('Template');
     }
+
+    const template: EmailTemplate = {
+      id: data.id,
+      org_id: data.org_id,
+      name: data.name,
+      subject: data.subject,
+      body: data.body,
+      variables: data.variables ?? [],
+      type: data.type,
+      created_at: data.created_at,
+    };
 
     return successResponse(template);
   });
@@ -58,33 +50,55 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
     const body = await parseBody(request, validateUpdateTemplate);
-    
-    const templateIndex = mockTemplates.findIndex((t) => t.id === id);
-    
-    if (templateIndex === -1) {
+    const supabase = createServiceClient();
+
+    // First get existing template to handle variable extraction
+    const { data: existing, error: fetchError } = await supabase
+      .from('email_templates')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existing) {
       throw new NotFoundError('Template');
     }
 
-    const existingTemplate = mockTemplates[templateIndex];
-    if (!existingTemplate) {
-      throw new NotFoundError('Template');
-    }
+    // Build update object
+    const updateData: Record<string, unknown> = {};
+    if (body.name !== undefined) updateData.name = body.name;
+    if (body.subject !== undefined) updateData.subject = body.subject;
+    if (body.body !== undefined) updateData.body = body.body;
+    if (body.type !== undefined) updateData.type = body.type;
 
     // Re-extract variables if content changed
-    let variables = existingTemplate.variables;
-    if (body.subject || body.body) {
-      const subject = body.subject ?? existingTemplate.subject;
-      const bodyContent = body.body ?? existingTemplate.body;
-      variables = extractTemplateVariables(subject + ' ' + bodyContent);
+    if (body.subject !== undefined || body.body !== undefined) {
+      const subject = body.subject ?? existing.subject;
+      const bodyContent = body.body ?? existing.body;
+      updateData.variables = extractTemplateVariables(subject + ' ' + bodyContent);
+    }
+
+    const { data, error } = await supabase
+      .from('email_templates')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error || !data) {
+      console.error('Supabase error updating template:', error);
+      throw new Error('Failed to update template');
     }
 
     const updatedTemplate: EmailTemplate = {
-      ...existingTemplate,
-      ...body,
-      variables,
+      id: data.id,
+      org_id: data.org_id,
+      name: data.name,
+      subject: data.subject,
+      body: data.body,
+      variables: data.variables ?? [],
+      type: data.type,
+      created_at: data.created_at,
     };
-
-    mockTemplates[templateIndex] = updatedTemplate;
 
     return successResponse(updatedTemplate);
   });
@@ -94,11 +108,27 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   return withErrorHandling(async () => {
     const { id } = await params;
-    
-    const templateIndex = mockTemplates.findIndex((t) => t.id === id);
-    
-    if (templateIndex !== -1) {
-      mockTemplates.splice(templateIndex, 1);
+    const supabase = createServiceClient();
+
+    // Check if template exists
+    const { data: existing } = await supabase
+      .from('email_templates')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (!existing) {
+      throw new NotFoundError('Template');
+    }
+
+    const { error } = await supabase
+      .from('email_templates')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Supabase error deleting template:', error);
+      throw new Error('Failed to delete template');
     }
 
     return successResponse({ deleted: true });

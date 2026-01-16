@@ -6,3 +6,5 @@ export * from './use-sequences';
 export * from './use-outreach';
 export * from './use-templates';
 export * from './use-settings';
+export * from './use-email-accounts';
+export * from './use-notifications';

@@ -1,26 +1,30 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Target, Zap, TrendingUp, Users } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#fafafa]">
       {/* Navigation */}
-      <nav className="border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
-                <Target className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-neutral-900">Cap Outro</span>
+              <span className="font-mono text-xl font-bold text-black tracking-tight">
+                CAP OUTRO
+              </span>
             </div>
-            <div className="flex items-center gap-4">
-              <Link href="/login">
-                <Button variant="ghost">Sign in</Button>
+            <div className="flex items-center gap-6">
+              <Link
+                href="/login"
+                className="text-sm text-gray-600 hover:text-black transition-colors"
+              >
+                Sign in
               </Link>
-              <Link href="/signup">
-                <Button variant="primary">Get started</Button>
+              <Link
+                href="/signup"
+                className="text-sm font-medium text-white bg-black px-4 py-2 hover:bg-gray-800 transition-colors"
+              >
+                Get started
               </Link>
             </div>
           </div>
@@ -28,66 +32,87 @@ export default function HomePage() {
       </nav>
 
       {/* Hero */}
-      <section className="py-24 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl sm:text-6xl font-bold text-neutral-900 mb-6">
+      <section className="py-24 px-6">
+        <div className="max-w-4xl mx-auto">
+          <p className="font-mono text-sm text-gray-500 mb-6 tracking-wide">
+            ////// INVESTOR OUTREACH PLATFORM
+          </p>
+          <h1 className="font-mono text-4xl sm:text-5xl lg:text-6xl font-bold text-black mb-8 leading-tight">
             Stop cold calling investors.
             <br />
-            <span className="text-neutral-600">Start closing rounds.</span>
+            Start closing rounds.
           </h1>
-          <p className="text-xl text-neutral-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 mb-10 max-w-2xl leading-relaxed">
             AI-powered investor outreach that transforms your messy investor lists into
             sequenced, personalized campaigns with real-time engagement tracking.
           </p>
-          <div className="flex items-center justify-center gap-4">
-            <Link href="/signup">
-              <Button size="lg" rightIcon={<ArrowRight className="w-5 h-5" />}>
-                Start free trial
-              </Button>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-2 text-white bg-black px-6 py-3 font-medium hover:bg-gray-800 transition-colors"
+            >
+              Start free trial
+              <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link href="#features">
-              <Button variant="outline" size="lg">
-                See how it works
-              </Button>
+            <Link
+              href="#features"
+              className="inline-flex items-center gap-2 text-black border border-black px-6 py-3 font-medium hover:bg-black hover:text-white transition-colors"
+            >
+              See how it works
             </Link>
           </div>
         </div>
       </section>
 
+      {/* Stats */}
+      <section className="py-16 px-6 border-t border-gray-200">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <StatCard label="Investors" value="20,000+" />
+            <StatCard label="Response Rate" value="3x" />
+            <StatCard label="Time Saved" value="80%" />
+            <StatCard label="Rounds Closed" value="$50M+" />
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
-      <section id="features" className="py-24 px-4 border-t border-neutral-200 bg-neutral-50">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-neutral-900 text-center mb-16">
+      <section id="features" className="py-24 px-6 border-t border-gray-200">
+        <div className="max-w-6xl mx-auto">
+          <p className="font-mono text-sm text-gray-500 mb-4 tracking-wide">
+            ////// FEATURES
+          </p>
+          <h2 className="font-mono text-3xl font-bold text-black mb-16">
             Everything you need to close your round
           </h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureCard
-              icon={<Target className="w-6 h-6" />}
+              marker="01"
               title="Investor-Deal Fit Scoring"
               description="AI matches your raise to investor thesis, check size, and stage preferences. No more wasted outreach."
             />
             <FeatureCard
-              icon={<Users className="w-6 h-6" />}
+              marker="02"
               title="Warm Path Detection"
               description="Find the shortest path to a warm intro through your network. Stop going in cold."
             />
             <FeatureCard
-              icon={<Zap className="w-6 h-6" />}
+              marker="03"
               title="Sequence Orchestration"
               description="Multi-touch campaigns with optimal timing. Automated follow-ups that feel personal."
             />
             <FeatureCard
-              icon={<TrendingUp className="w-6 h-6" />}
+              marker="04"
               title="Conversion Intelligence"
               description="Track opened → replied → meeting → committed in real-time. Know exactly where you stand."
             />
             <FeatureCard
-              icon={<Target className="w-6 h-6" />}
+              marker="05"
               title="Pipeline Management"
               description="Kanban view of your raise. Move investors through stages with one click."
             />
             <FeatureCard
-              icon={<Zap className="w-6 h-6" />}
+              marker="06"
               title="AI Personalization"
               description="Every email tailored to the investor. Increase response rates by 3x."
             />
@@ -96,36 +121,39 @@ export default function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 px-4 border-t border-neutral-200">
+      <section className="py-24 px-6 bg-black text-white">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-neutral-900 mb-4">
+          <p className="font-mono text-sm text-gray-400 mb-4 tracking-wide">
+            ////// GET STARTED
+          </p>
+          <h2 className="font-mono text-3xl font-bold mb-6">
             Ready to transform your raise?
           </h2>
-          <p className="text-neutral-600 mb-8">
+          <p className="text-gray-400 mb-10 text-lg">
             Join hundreds of founders who have used Cap Outro to close their rounds faster.
           </p>
-          <Link href="/signup">
-            <Button size="lg" rightIcon={<ArrowRight className="w-5 h-5" />}>
-              Get started for free
-            </Button>
+          <Link
+            href="/signup"
+            className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 font-medium hover:bg-gray-100 transition-colors"
+          >
+            Get started for free
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-neutral-200 py-8 px-4 bg-neutral-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <footer className="border-t border-gray-200 py-8 px-6 bg-white">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-neutral-900 flex items-center justify-center">
-              <Target className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-sm text-neutral-600">© 2025 Cap Outro</span>
+            <span className="font-mono text-sm font-bold text-black">CAP OUTRO</span>
+            <span className="text-sm text-gray-400">© 2025</span>
           </div>
-          <div className="flex items-center gap-6 text-sm text-neutral-600">
-            <Link href="/privacy" className="hover:text-neutral-900 transition-colors">
+          <div className="flex items-center gap-6 text-sm text-gray-500">
+            <Link href="/privacy" className="hover:text-black transition-colors">
               Privacy
             </Link>
-            <Link href="/terms" className="hover:text-neutral-900 transition-colors">
+            <Link href="/terms" className="hover:text-black transition-colors">
               Terms
             </Link>
           </div>
@@ -135,22 +163,29 @@ export default function HomePage() {
   );
 }
 
+function StatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="text-center">
+      <p className="font-mono text-3xl font-bold text-black mb-1">{value}</p>
+      <p className="text-sm text-gray-500">{label}</p>
+    </div>
+  );
+}
+
 function FeatureCard({
-  icon,
+  marker,
   title,
   description,
 }: {
-  icon: React.ReactNode;
+  marker: string;
   title: string;
   description: string;
 }) {
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl p-6 hover:border-neutral-300 hover:shadow-md transition-all">
-      <div className="w-12 h-12 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-900 mb-4">
-        {icon}
-      </div>
-      <h3 className="text-lg font-semibold text-neutral-900 mb-2">{title}</h3>
-      <p className="text-neutral-600">{description}</p>
+    <div className="border border-gray-200 p-6 hover:border-gray-400 transition-colors bg-white">
+      <p className="font-mono text-xs text-gray-400 mb-4">{marker}</p>
+      <h3 className="font-mono text-lg font-semibold text-black mb-3">{title}</h3>
+      <p className="text-gray-600 leading-relaxed">{description}</p>
     </div>
   );
 }

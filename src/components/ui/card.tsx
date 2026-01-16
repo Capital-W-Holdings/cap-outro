@@ -23,9 +23,9 @@ export function Card({
   return (
     <div
       className={`
-        bg-white border border-neutral-200 rounded-xl
+        bg-white border border-gray-200
         ${paddingStyles[padding]}
-        ${hover ? 'transition-colors hover:border-neutral-300 hover:shadow-sm' : ''}
+        ${hover ? 'transition-colors hover:border-gray-400' : ''}
         ${className}
       `}
       {...props}
@@ -57,7 +57,7 @@ export function CardTitle({
   className?: string;
 }) {
   return (
-    <h3 className={`text-lg font-semibold text-neutral-900 ${className}`}>{children}</h3>
+    <h3 className={`font-mono text-lg font-semibold text-black ${className}`}>{children}</h3>
   );
 }
 
@@ -68,7 +68,7 @@ export function CardDescription({
   children: ReactNode;
   className?: string;
 }) {
-  return <p className={`text-sm text-neutral-500 ${className}`}>{children}</p>;
+  return <p className={`text-sm text-gray-500 ${className}`}>{children}</p>;
 }
 
 export function CardContent({
@@ -89,7 +89,7 @@ export function CardFooter({
   className?: string;
 }) {
   return (
-    <div className={`flex items-center gap-3 mt-4 pt-4 border-t border-neutral-200 ${className}`}>
+    <div className={`flex items-center gap-3 mt-4 pt-4 border-t border-gray-200 ${className}`}>
       {children}
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { Key, Check, X, ExternalLink } from 'lucide-react';
 import { Card, Button } from '@/components/ui';
+import { useToast } from '@/components/ui/toast';
 
 interface Integration {
   id: string;
@@ -10,17 +11,10 @@ interface Integration {
   connected: boolean;
   icon: string;
   url?: string;
+  comingSoon?: boolean;
 }
 
 const integrations: Integration[] = [
-  {
-    id: 'resend',
-    name: 'Resend',
-    description: 'Email delivery service for sending investor outreach',
-    connected: false,
-    icon: '📧',
-    url: 'https://resend.com',
-  },
   {
     id: 'linkedin',
     name: 'LinkedIn',
@@ -28,6 +22,7 @@ const integrations: Integration[] = [
     connected: false,
     icon: '💼',
     url: 'https://linkedin.com',
+    comingSoon: true,
   },
   {
     id: 'calendar',
@@ -35,6 +30,7 @@ const integrations: Integration[] = [
     description: 'Sync meetings and track investor interactions',
     connected: false,
     icon: '📅',
+    comingSoon: true,
   },
   {
     id: 'crm',
@@ -42,18 +38,24 @@ const integrations: Integration[] = [
     description: 'Sync investor data with your CRM',
     connected: false,
     icon: '☁️',
+    comingSoon: true,
   },
 ];
 
 export function IntegrationSettings() {
+  const { addToast } = useToast();
+
   const handleConnect = (integration: Integration) => {
+    if (integration.comingSoon) {
+      addToast(`${integration.name} integration coming soon!`, 'info');
+      return;
+    }
     // TODO: Implement OAuth flow
-    console.log('Connect:', integration.id);
+    addToast(`Connecting to ${integration.name}...`, 'info');
   };
 
   const handleDisconnect = (integration: Integration) => {
-    // TODO: Implement disconnect
-    console.log('Disconnect:', integration.id);
+    addToast(`Disconnected from ${integration.name}`, 'success');
   };
 
   return (
@@ -81,7 +83,11 @@ export function IntegrationSettings() {
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <h4 className="font-medium text-white">{integration.name}</h4>
-                {integration.connected ? (
+                {integration.comingSoon ? (
+                  <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs bg-blue-500/10 text-blue-400">
+                    Coming Soon
+                  </span>
+                ) : integration.connected ? (
                   <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs bg-green-500/10 text-green-400">
                     <Check className="w-3 h-3" />
                     Connected
