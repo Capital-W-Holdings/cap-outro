@@ -23,15 +23,47 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const supabase = createServiceClient();
 
-    // Verify sequence exists
+    // Verify sequence exists (but allow demo mode fallback)
     const { data: sequence, error: seqError } = await supabase
       .from('sequences')
       .select('id, name, org_id')
       .eq('id', sequenceId)
       .single();
 
-    if (seqError || !sequence) {
-      throw new NotFoundError('Sequence');
+    const isDemoMode = seqError || !sequence;
+
+    // If demo mode, check demo enrollments first
+    if (isDemoMode) {
+      let demoData = demoEnrollments.get(sequenceId) || [];
+
+      // Filter by status if provided
+      if (status) {
+        demoData = demoData.filter(e => e.status === status);
+      }
+
+      // Get investor data for demo enrollments
+      const investorIds = demoData.map(e => e.investor_id);
+      if (investorIds.length > 0) {
+        const { data: investors } = await supabase
+          .from('investors')
+          .select('id, name, email, firm')
+          .in('id', investorIds);
+
+        // Attach investor data to enrollments
+        demoData = demoData.map(enrollment => ({
+          ...enrollment,
+          investor: investors?.find((i: { id: string }) => i.id === enrollment.investor_id) || null,
+        }));
+      }
+
+      // Apply pagination
+      const paginatedData = demoData.slice(offset, offset + limit);
+
+      return successResponse(paginatedData, {
+        page,
+        limit,
+        total: demoData.length,
+      });
     }
 
     // Build query
