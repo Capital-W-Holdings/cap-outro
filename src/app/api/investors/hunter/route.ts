@@ -79,14 +79,19 @@ export async function POST(request: NextRequest) {
       const enrichResult = await hunter.findEmail(firstName, lastName, domain);
 
       if (enrichResult.success && enrichResult.email) {
-        // Update investor in database
+        // Update investor in database - mark as verified since it came from Hunter
         const updateData: Record<string, unknown> = {
           email: enrichResult.email,
+          email_verified: true,
+          email_verified_at: new Date().toISOString(),
+          email_verification_source: 'hunter',
         };
 
         // Also update LinkedIn if found and not already set
         if (enrichResult.linkedin_url && !investor.linkedin_url) {
           updateData.linkedin_url = enrichResult.linkedin_url;
+          updateData.linkedin_verified = true;
+          updateData.linkedin_verified_at = new Date().toISOString();
         }
 
         const { error: updateError } = await supabase

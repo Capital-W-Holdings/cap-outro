@@ -20,11 +20,12 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', descripti
   // Keep onClose ref updated
   onCloseRef.current = onClose;
 
+  // Mobile-first responsive sizing
   const sizeClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
+    sm: 'max-w-[calc(100vw-2rem)] sm:max-w-sm',
+    md: 'max-w-[calc(100vw-2rem)] sm:max-w-md',
+    lg: 'max-w-[calc(100vw-2rem)] sm:max-w-lg md:max-w-2xl',
+    xl: 'max-w-[calc(100vw-2rem)] sm:max-w-lg md:max-w-2xl lg:max-w-4xl',
   };
 
   useEffect(() => {
@@ -100,8 +101,8 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', descripti
       <div
         ref={modalRef}
         className={`
-          relative w-full ${sizeClasses[size]} mx-4 bg-white border border-gray-200
-          rounded-xl shadow-2xl animate-in
+          relative w-full ${sizeClasses[size]} mx-2 sm:mx-4 bg-white border border-gray-200
+          rounded-xl shadow-2xl animate-in max-h-[90vh] flex flex-col
         `}
         role="dialog"
         aria-modal="true"
@@ -111,28 +112,28 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', descripti
         onKeyDown={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <div>
-            <h2 id="modal-title" className="text-lg font-semibold text-black">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex-shrink-0">
+          <div className="min-w-0 flex-1 mr-2">
+            <h2 id="modal-title" className="text-base sm:text-lg font-semibold text-black truncate">
               {title}
             </h2>
             {description && (
-              <p id="modal-description" className="text-sm text-gray-500 mt-1">
+              <p id="modal-description" className="text-sm text-gray-500 mt-1 line-clamp-2">
                 {description}
               </p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-black hover:bg-gray-100 rounded transition-colors"
+            className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="px-6 py-4">{children}</div>
+        {/* Content - Scrollable */}
+        <div className="px-4 sm:px-6 py-4 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );

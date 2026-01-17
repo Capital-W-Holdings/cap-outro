@@ -22,6 +22,7 @@ export default function CampaignsPage() {
       <Header
         title="Campaigns"
         subtitle="Manage your capital raising campaigns"
+        help="Campaigns organize your fundraising efforts. Each campaign (e.g., 'Series A 2024') contains sequences and tracks overall progress toward your fundraising goals."
         action={{
           label: 'New Campaign',
           onClick: handleCreateCampaign,

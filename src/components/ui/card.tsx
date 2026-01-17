@@ -23,9 +23,9 @@ export function Card({
   return (
     <div
       className={`
-        bg-white border border-gray-200
+        bg-white border border-gray-200 rounded-xl
         ${paddingStyles[padding]}
-        ${hover ? 'transition-colors hover:border-gray-400' : ''}
+        ${hover ? 'transition-all hover:border-gray-300 hover:shadow-md' : ''}
         ${className}
       `}
       {...props}

@@ -7,6 +7,7 @@ import { Bell, Search, Plus, User, Settings, LogOut, HelpCircle, X, Mail, Calend
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dropdown } from '@/components/ui/dropdown';
+import { HelpTooltip } from '@/components/ui/help-tooltip';
 import { useNotifications, useMarkNotificationsRead } from '@/hooks';
 import { useMobileSidebar } from '@/contexts/mobile-sidebar-context';
 import type { NotificationType } from '@/types';
@@ -21,6 +22,7 @@ interface HeaderProps {
   customAction?: React.ReactNode;
   showSearch?: boolean;
   onSearch?: (query: string) => void;
+  help?: string;
 }
 
 export function Header({
@@ -30,12 +32,22 @@ export function Header({
   customAction,
   showSearch = false,
   onSearch,
+  help,
 }: HeaderProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
   const { open: openMobileSidebar } = useMobileSidebar();
+
+  // Focus input when mobile search opens
+  useEffect(() => {
+    if (isMobileSearchOpen && mobileSearchInputRef.current) {
+      mobileSearchInputRef.current.focus();
+    }
+  }, [isMobileSearchOpen]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,7 +136,37 @@ export function Header({
   };
 
   return (
-    <header className="h-16 border-b border-gray-200 bg-white px-4 sm:px-6 flex items-center justify-between gap-4">
+    <header className="relative h-16 border-b border-gray-200 bg-white px-4 sm:px-6 flex items-center justify-between gap-4">
+      {/* Mobile Search Overlay */}
+      {showSearch && isMobileSearchOpen && (
+        <div className="absolute inset-0 z-20 bg-white px-4 flex items-center gap-3 sm:hidden">
+          <form onSubmit={handleSearch} className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                ref={mobileSearchInputRef}
+                type="text"
+                placeholder="Search investors..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+              />
+            </div>
+          </form>
+          <button
+            onClick={() => {
+              setIsMobileSearchOpen(false);
+              setSearchQuery('');
+              onSearch?.('');
+            }}
+            className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Close search"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
       {/* Left: Hamburger + Title */}
       <div className="flex items-center gap-3 min-w-0">
         {/* Mobile hamburger menu */}
@@ -137,14 +179,17 @@ export function Header({
         </button>
 
         <div className="min-w-0">
-          <h1 className="font-mono text-lg sm:text-xl font-semibold text-black truncate">{title}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="font-mono text-lg sm:text-xl font-semibold text-black truncate">{title}</h1>
+            {help && <HelpTooltip content={help} />}
+          </div>
           {subtitle && (
             <p className="text-sm text-gray-500 truncate hidden sm:block">{subtitle}</p>
           )}
         </div>
       </div>
 
-      {/* Center: Search (optional) - hidden on mobile */}
+      {/* Center: Search (optional) - Desktop only */}
       {showSearch && (
         <form onSubmit={handleSearch} className="flex-1 max-w-md mx-4 hidden sm:block">
           <div className="relative">
@@ -162,6 +207,17 @@ export function Header({
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        {/* Mobile Search Button */}
+        {showSearch && !isMobileSearchOpen && (
+          <button
+            onClick={() => setIsMobileSearchOpen(true)}
+            className="sm:hidden p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Search"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+        )}
+
         {customAction && (
           <div className="hidden sm:block">{customAction}</div>
         )}

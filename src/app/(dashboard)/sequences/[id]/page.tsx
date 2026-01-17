@@ -18,6 +18,7 @@ export default function SequenceDetailPage() {
       <Header
         title="Sequence Builder"
         subtitle="Build your automated outreach sequence"
+        help="Add steps to create an automated email sequence. Each step has a delay (wait time) and an email template. Enrolled investors will receive emails automatically based on your schedule."
       />
 
       <div className="flex-1 p-6 overflow-auto">

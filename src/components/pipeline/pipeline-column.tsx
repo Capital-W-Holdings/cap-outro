@@ -24,9 +24,9 @@ export function PipelineColumn({ stage, entries, onMoveEntry: _onMoveEntry }: Pi
   const config = stageConfig[stage];
 
   return (
-    <div className="flex-shrink-0 w-72 bg-gray-50 rounded-xl border border-gray-200 flex flex-col max-h-full">
-      {/* Column Header */}
-      <div className="p-3 border-b border-gray-200">
+    <div className="flex-shrink-0 w-full md:w-72 bg-gray-50 rounded-xl border border-gray-200 flex flex-col md:max-h-full">
+      {/* Column Header - Hidden on mobile since we have the selector */}
+      <div className="hidden md:block p-3 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${config.color}`} />
           <h3 className="font-medium text-black">{config.label}</h3>
@@ -37,10 +37,10 @@ export function PipelineColumn({ stage, entries, onMoveEntry: _onMoveEntry }: Pi
       </div>
 
       {/* Cards */}
-      <div className="flex-1 p-2 space-y-2 overflow-y-auto">
+      <div className="flex-1 p-2 space-y-2 md:overflow-y-auto">
         {entries.length === 0 ? (
-          <div className="p-4 text-center text-gray-500 text-sm">
-            No investors
+          <div className="p-8 text-center text-gray-500 text-sm">
+            <p>No investors in this stage</p>
           </div>
         ) : (
           entries.map((entry) => (

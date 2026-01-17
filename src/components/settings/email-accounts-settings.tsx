@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Mail, Plus, Check, Trash2, Star, AlertCircle, RefreshCw, Send, ArrowRight } from 'lucide-react';
-import { Card, Button, Modal, ModalFooter, Input, Select, type SelectOption } from '@/components/ui';
+import { Card, Button, Modal, ModalFooter, Input, Select, HelpTooltip, type SelectOption } from '@/components/ui';
 import { useToast } from '@/components/ui/toast';
 import { useEmailAccounts, useCreateEmailAccount, useDeleteEmailAccount, useSetDefaultEmailAccount } from '@/hooks';
 import type { EmailAccount, EmailProvider } from '@/types';
@@ -139,7 +139,10 @@ export function EmailAccountsSettings() {
             <Mail className={`w-5 h-5 ${hasAccounts ? 'text-green-500' : 'text-brand-gold'}`} />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">Email Accounts</h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="text-lg font-semibold text-white">Email Accounts</h3>
+              <HelpTooltip content="Connect your Gmail or email provider to send outreach emails. Emails are sent from your account, maintaining deliverability and personalization." />
+            </div>
             <p className="text-sm text-gray-400">
               {hasAccounts
                 ? `${accounts.length} account${accounts.length > 1 ? 's' : ''} connected`

@@ -21,6 +21,7 @@ export default function TemplatesPage() {
       <Header
         title="Email Templates"
         subtitle="Create and manage reusable email templates"
+        help="Create reusable email templates with merge fields like {{investor_name}} and {{firm_name}}. Templates can be used in sequence steps for consistent, personalized outreach."
         action={{
           label: 'New Template',
           onClick: handleCreate,

@@ -13,3 +13,6 @@ export * from './visually-hidden';
 export * from './announce';
 export * from './dropdown';
 export * from './toast';
+export * from './breadcrumbs';
+export * from './confirm-dialog';
+export * from './help-tooltip';

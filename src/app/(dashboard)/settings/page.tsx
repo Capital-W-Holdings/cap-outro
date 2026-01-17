@@ -15,6 +15,7 @@ export default function SettingsPage() {
       <Header
         title="Settings"
         subtitle="Configure your account and start sending campaigns"
+        help="Configure your email account to start sending campaigns. Connect Gmail via OAuth to enable automated outreach with proper authentication."
       />
 
       <div className="flex-1 p-4 sm:p-6 overflow-auto">

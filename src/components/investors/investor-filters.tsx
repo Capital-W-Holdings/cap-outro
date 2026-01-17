@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Filter, ChevronDown, X, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { HelpTooltip } from '@/components/ui/help-tooltip';
 import {
   type InvestorFilters,
   type ContactMethod,
@@ -148,9 +149,12 @@ export function InvestorFiltersBar({ filters, onChange }: InvestorFiltersProps) 
         <div className="border-t border-gray-200 p-4 space-y-4">
           {/* Investment Stage */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">
-              Investment Stage
-            </label>
+            <div className="flex items-center gap-1 mb-2">
+              <label className="text-xs font-medium text-gray-600">
+                Investment Stage
+              </label>
+              <HelpTooltip content="Filter by the stage of investment the investor typically focuses on (Seed, Series A, etc.)" />
+            </div>
             <div className="flex flex-wrap gap-2">
               {STAGE_OPTIONS.map((stage) => (
                 <button
@@ -170,9 +174,12 @@ export function InvestorFiltersBar({ filters, onChange }: InvestorFiltersProps) 
 
           {/* Sectors */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">
-              Sectors
-            </label>
+            <div className="flex items-center gap-1 mb-2">
+              <label className="text-xs font-medium text-gray-600">
+                Sectors
+              </label>
+              <HelpTooltip content="Filter by industry sectors the investor is interested in (SaaS, Healthcare, Fintech, etc.)" />
+            </div>
             <div className="flex flex-wrap gap-2">
               {SECTOR_OPTIONS.map((sector) => (
                 <button
@@ -242,9 +249,12 @@ export function InvestorFiltersBar({ filters, onChange }: InvestorFiltersProps) 
 
             {/* Fit Score */}
             <div className="w-[calc(50%-0.375rem)] sm:w-auto">
-              <label className="block text-xs font-medium text-gray-600 mb-2">
-                Min Fit Score
-              </label>
+              <div className="flex items-center gap-1 mb-2">
+                <label className="text-xs font-medium text-gray-600">
+                  Min Fit Score
+                </label>
+                <HelpTooltip content="Fit score (0-100) indicates how well the investor matches your company based on stage, sector, and check size alignment." />
+              </div>
               <select
                 value={filters.fit_score_min ?? ''}
                 onChange={(e) =>
@@ -263,9 +273,12 @@ export function InvestorFiltersBar({ filters, onChange }: InvestorFiltersProps) 
 
             {/* Contact Method */}
             <div className="w-[calc(50%-0.375rem)] sm:w-auto sm:ml-auto">
-              <label className="block text-xs font-medium text-gray-600 mb-2">
-                Contact Method
-              </label>
+              <div className="flex items-center gap-1 mb-2">
+                <label className="text-xs font-medium text-gray-600">
+                  Contact Method
+                </label>
+                <HelpTooltip content="Filter by available contact methods: Email for investors with email addresses, LinkedIn for those with profiles." />
+              </div>
               <select
                 value={filters.contact_method ?? ''}
                 onChange={(e) =>

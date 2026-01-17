@@ -54,6 +54,7 @@ export default function SequencesPage() {
       <Header
         title="Sequences"
         subtitle="Automate your investor outreach"
+        help="Sequences automate your outreach with multi-step email campaigns. Add steps with delays, enroll investors, and the system will automatically send follow-ups based on your schedule."
         action={{
           label: 'New Sequence',
           onClick: handleCreateSequence,

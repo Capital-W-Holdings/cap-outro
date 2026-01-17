@@ -167,6 +167,7 @@ export default function InvestorsPage() {
       <Header
         title="Investors"
         subtitle="Manage your investor database"
+        help="Your investor database. Add investors manually, import from CSV, filter by criteria, and select multiple investors to enroll them in outreach sequences."
         showSearch
         onSearch={handleSearch}
         customAction={
