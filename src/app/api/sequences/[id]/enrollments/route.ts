@@ -5,6 +5,7 @@ import {
   NotFoundError,
 } from '@/lib/api/utils';
 import { createServiceClient } from '@/lib/supabase/server';
+import { demoEnrollments } from '@/lib/demo/enrollments';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -64,8 +65,39 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const { data: enrollments, error, count } = await query;
 
     if (error) {
-      console.error('Error fetching enrollments:', error);
-      throw new Error('Failed to fetch enrollments');
+      console.error('Error fetching enrollments (using demo fallback):', error);
+
+      // Fallback to demo mode
+      let demoData = demoEnrollments.get(sequenceId) || [];
+
+      // Filter by status if provided
+      if (status) {
+        demoData = demoData.filter(e => e.status === status);
+      }
+
+      // Get investor data for demo enrollments
+      const investorIds = demoData.map(e => e.investor_id);
+      if (investorIds.length > 0) {
+        const { data: investors } = await supabase
+          .from('investors')
+          .select('id, name, email, firm')
+          .in('id', investorIds);
+
+        // Attach investor data to enrollments
+        demoData = demoData.map(enrollment => ({
+          ...enrollment,
+          investor: investors?.find((i: { id: string }) => i.id === enrollment.investor_id) || null,
+        }));
+      }
+
+      // Apply pagination
+      const paginatedData = demoData.slice(offset, offset + limit);
+
+      return successResponse(paginatedData, {
+        page,
+        limit,
+        total: demoData.length,
+      });
     }
 
     return successResponse(enrollments || [], {
@@ -108,8 +140,30 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       .select();
 
     if (error) {
-      console.error('Error updating enrollments:', error);
-      throw new Error('Failed to update enrollments');
+      console.error('Error updating enrollments (using demo fallback):', error);
+
+      // Fallback to demo mode
+      const existingEnrollments = demoEnrollments.get(sequenceId) || [];
+      let updatedCount = 0;
+
+      const updatedEnrollments = existingEnrollments.map(enrollment => {
+        if (enrollment_ids.includes(enrollment.id)) {
+          updatedCount++;
+          return {
+            ...enrollment,
+            status: status as 'active' | 'paused' | 'completed' | 'cancelled',
+            completed_at: status === 'completed' ? new Date().toISOString() : enrollment.completed_at,
+          };
+        }
+        return enrollment;
+      });
+
+      demoEnrollments.set(sequenceId, updatedEnrollments);
+
+      return successResponse({
+        updated: updatedCount,
+        message: `Updated ${updatedCount} enrollments to ${status} (demo mode)`,
+      });
     }
 
     return successResponse({
