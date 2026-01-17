@@ -72,18 +72,35 @@ export async function GET() {
 
     const supabase = createServiceClient();
 
-    // Fetch all investors with contact info
-    // Note: email_verified and linkedin_verified may not exist if migration hasn't run
-    const { data: investors, error } = await supabase
-      .from('investors')
-      .select('id, name, email, linkedin_url');
+    // Fetch all investors with pagination (Supabase default limit is 1000)
+    const allInvestors: Array<{ id: string; name: string; email: string | null; linkedin_url: string | null }> = [];
+    let page = 0;
+    const pageSize = 1000;
+    let hasMore = true;
 
-    if (error) {
-      console.error('Error fetching investors:', error);
-      return NextResponse.json({ error: 'Failed to fetch investors' }, { status: 500 });
+    while (hasMore) {
+      const { data: batch, error: batchError } = await supabase
+        .from('investors')
+        .select('id, name, email, linkedin_url')
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+      if (batchError) {
+        console.error('Error fetching investors:', batchError);
+        return NextResponse.json({ error: 'Failed to fetch investors' }, { status: 500 });
+      }
+
+      if (batch && batch.length > 0) {
+        allInvestors.push(...batch);
+        page++;
+        hasMore = batch.length === pageSize;
+      } else {
+        hasMore = false;
+      }
     }
 
-    if (!investors) {
+    const investors = allInvestors;
+
+    if (investors.length === 0) {
       return NextResponse.json({ stats: null, message: 'No investors found' });
     }
 
@@ -188,14 +205,32 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServiceClient();
 
-    // Fetch all investors
-    const { data: investors, error } = await supabase
-      .from('investors')
-      .select('id, name, email, linkedin_url');
+    // Fetch all investors with pagination (Supabase default limit is 1000)
+    const allInvestors: Array<{ id: string; name: string; email: string | null; linkedin_url: string | null }> = [];
+    let page = 0;
+    const pageSize = 1000;
+    let hasMore = true;
 
-    if (error || !investors) {
-      return NextResponse.json({ error: 'Failed to fetch investors' }, { status: 500 });
+    while (hasMore) {
+      const { data: batch, error: batchError } = await supabase
+        .from('investors')
+        .select('id, name, email, linkedin_url')
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+      if (batchError) {
+        return NextResponse.json({ error: 'Failed to fetch investors' }, { status: 500 });
+      }
+
+      if (batch && batch.length > 0) {
+        allInvestors.push(...batch);
+        page++;
+        hasMore = batch.length === pageSize;
+      } else {
+        hasMore = false;
+      }
     }
+
+    const investors = allInvestors;
 
     let toUpdate: Array<{ id: string; updates: Record<string, unknown> }> = [];
 
