@@ -39,10 +39,14 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', descripti
     );
     setTimeout(() => firstFocusable?.focus(), 0);
 
-    // Handle escape key
+    // Handle escape key - don't close if typing in an input
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onCloseRef.current();
+        const target = e.target as HTMLElement;
+        const isTyping = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
+        if (!isTyping) {
+          onCloseRef.current();
+        }
       }
     };
 
@@ -103,6 +107,8 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', descripti
         aria-modal="true"
         aria-labelledby="modal-title"
         aria-describedby={description ? 'modal-description' : undefined}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
