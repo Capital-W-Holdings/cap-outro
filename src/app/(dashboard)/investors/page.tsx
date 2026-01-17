@@ -25,6 +25,7 @@ export default function InvestorsPage() {
   const [isSequenceModalOpen, setIsSequenceModalOpen] = useState(false);
   const [selectedSequenceId, setSelectedSequenceId] = useState('');
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [enrollError, setEnrollError] = useState<string | null>(null);
   const { data: sequences } = useSequences();
 
   // Modal states
@@ -109,6 +110,7 @@ export default function InvestorsPage() {
   }, []);
 
   const handleAddToSequence = useCallback(() => {
+    setEnrollError(null);
     setIsSequenceModalOpen(true);
   }, []);
 
@@ -116,6 +118,7 @@ export default function InvestorsPage() {
     if (!selectedSequenceId || selectedIds.length === 0) return;
 
     setIsEnrolling(true);
+    setEnrollError(null);
     try {
       const response = await fetch(`/api/sequences/${selectedSequenceId}/enroll`, {
         method: 'POST',
@@ -123,11 +126,12 @@ export default function InvestorsPage() {
         body: JSON.stringify({ investor_ids: selectedIds }),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to enroll investors');
+        throw new Error(result.error?.message || 'Failed to enroll investors');
       }
 
-      const result = await response.json();
       console.log('Enrolled:', result);
 
       // Clear selection and close modal
@@ -135,8 +139,10 @@ export default function InvestorsPage() {
       setSelectedSequenceId('');
       setSelectedIds([]);
       setIsSelectionMode(false);
+      setEnrollError(null);
     } catch (err) {
       console.error('Error enrolling investors:', err);
+      setEnrollError(err instanceof Error ? err.message : 'Failed to enroll investors');
     } finally {
       setIsEnrolling(false);
     }
@@ -268,6 +274,10 @@ export default function InvestorsPage() {
             <p className="text-sm text-gray-500">
               Investors will be enrolled and will start receiving outreach based on the sequence steps.
             </p>
+          )}
+
+          {enrollError && (
+            <p className="text-sm text-red-500">{enrollError}</p>
           )}
         </div>
 
