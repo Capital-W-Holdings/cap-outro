@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Mail, Plus, Check, Trash2, Star, AlertCircle, RefreshCw, Send, ArrowRight } from 'lucide-react';
+import { Mail, Plus, Check, Trash2, Star, AlertCircle, RefreshCw, Send, ArrowRight, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Card, Button, Modal, ModalFooter, Input, Select, HelpTooltip, type SelectOption } from '@/components/ui';
 import { useToast } from '@/components/ui/toast';
 import { useEmailAccounts, useCreateEmailAccount, useDeleteEmailAccount, useSetDefaultEmailAccount } from '@/hooks';
@@ -53,6 +53,10 @@ export function EmailAccountsSettings() {
   const [selectedProvider, setSelectedProvider] = useState<EmailProvider | ''>('');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationStatus, setValidationStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
+  const [validationMessage, setValidationMessage] = useState('');
 
   const { data: accounts, isLoading, refetch } = useEmailAccounts();
   const { mutate: createAccount, isLoading: isCreating } = useCreateEmailAccount();
@@ -63,6 +67,43 @@ export function EmailAccountsSettings() {
   // Redirect to Google OAuth
   const handleGoogleConnect = () => {
     window.location.href = '/api/auth/google?redirect=/settings';
+  };
+
+  // Validate Resend API key
+  const handleValidateApiKey = async () => {
+    if (!apiKey.trim()) return;
+
+    setIsValidating(true);
+    setValidationStatus('idle');
+    setValidationMessage('');
+
+    try {
+      const response = await fetch('/api/email-accounts/validate-resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: apiKey.trim() }),
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        if (result.data.valid) {
+          setValidationStatus('valid');
+          setValidationMessage(result.data.message || 'API key is valid');
+        } else {
+          setValidationStatus('invalid');
+          setValidationMessage(result.data.message || 'Invalid API key');
+        }
+      } else {
+        setValidationStatus('invalid');
+        setValidationMessage(result.error?.message || 'Failed to validate API key');
+      }
+    } catch {
+      setValidationStatus('invalid');
+      setValidationMessage('Network error - please try again');
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   const handleConnect = async () => {
@@ -77,21 +118,35 @@ export function EmailAccountsSettings() {
         return;
       }
 
+      // For Resend, require a validated API key
+      if (selectedProvider === 'resend' && validationStatus !== 'valid') {
+        addToast('Please validate your API key first', 'warning');
+        return;
+      }
+
       await createAccount({
         provider: selectedProvider,
         email,
         name: name || email.split('@')[0],
+        access_token: selectedProvider === 'resend' ? apiKey.trim() : undefined,
       });
 
       addToast(`Email account ${email} connected successfully!`, 'success');
       setIsConnectModalOpen(false);
-      setSelectedProvider('');
-      setEmail('');
-      setName('');
+      resetForm();
       refetch();
     } catch {
       addToast('Failed to connect email account', 'error');
     }
+  };
+
+  const resetForm = () => {
+    setSelectedProvider('');
+    setEmail('');
+    setName('');
+    setApiKey('');
+    setValidationStatus('idle');
+    setValidationMessage('');
   };
 
   const handleDisconnect = async (account: EmailAccount) => {
@@ -118,9 +173,7 @@ export function EmailAccountsSettings() {
 
   const handleCloseModal = () => {
     setIsConnectModalOpen(false);
-    setSelectedProvider('');
-    setEmail('');
-    setName('');
+    resetForm();
   };
 
   const hasAccounts = accounts && accounts.length > 0;
@@ -348,14 +401,74 @@ export function EmailAccountsSettings() {
                 </p>
               </div>
 
+              {/* API Key Input with Validation */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-300">
+                  Resend API Key
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    placeholder="re_xxxxxxxx..."
+                    value={apiKey}
+                    onChange={(e) => {
+                      setApiKey(e.target.value);
+                      setValidationStatus('idle');
+                      setValidationMessage('');
+                    }}
+                    disabled={isCreating || isValidating}
+                    className="flex-1"
+                  />
+                  <Button
+                    variant={validationStatus === 'valid' ? 'primary' : 'outline'}
+                    onClick={handleValidateApiKey}
+                    disabled={!apiKey.trim() || isValidating || isCreating}
+                    className={validationStatus === 'valid' ? 'bg-green-600 hover:bg-green-700' : ''}
+                  >
+                    {isValidating ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : validationStatus === 'valid' ? (
+                      <CheckCircle className="w-4 h-4" />
+                    ) : (
+                      'Verify'
+                    )}
+                  </Button>
+                </div>
+                {validationMessage && (
+                  <div className={`flex items-center gap-2 text-sm ${
+                    validationStatus === 'valid' ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    {validationStatus === 'valid' ? (
+                      <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                    ) : (
+                      <XCircle className="w-4 h-4 flex-shrink-0" />
+                    )}
+                    <span>{validationMessage}</span>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">
+                  Get your API key from{' '}
+                  <a
+                    href="https://resend.com/api-keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-purple-400 hover:text-purple-300 underline"
+                  >
+                    resend.com/api-keys
+                  </a>
+                </p>
+              </div>
+
               <Input
                 label="Sending Email"
                 type="email"
                 placeholder="you@yourdomain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isCreating}
-                helperText="Use your verified domain email"
+                disabled={isCreating || validationStatus !== 'valid'}
+                helperText={validationStatus !== 'valid'
+                  ? 'Verify your API key first'
+                  : 'Use an email from your verified Resend domain'}
               />
 
               <Input
@@ -363,7 +476,7 @@ export function EmailAccountsSettings() {
                 placeholder="Alex Chen"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                disabled={isCreating}
+                disabled={isCreating || validationStatus !== 'valid'}
                 helperText="How your name appears to investors"
               />
             </>
@@ -379,7 +492,7 @@ export function EmailAccountsSettings() {
               variant="primary"
               onClick={handleConnect}
               isLoading={isCreating}
-              disabled={!email}
+              disabled={!email || validationStatus !== 'valid'}
               leftIcon={<Check className="w-4 h-4" />}
             >
               Connect Account

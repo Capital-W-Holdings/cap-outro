@@ -20,8 +20,18 @@ import { useMobileSidebar } from '@/contexts/mobile-sidebar-context';
 import { HelpTooltip } from '@/components/ui/help-tooltip';
 import { SetupProgressSidebar } from '@/components/onboarding';
 
+type ColorKey = 'blue' | 'violet' | 'purple' | 'amber' | 'emerald' | 'rose' | 'gray';
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  help: string;
+  color: ColorKey;
+}
+
 // Nav items with colors for active states
-const navItems = [
+const navItems: NavItem[] = [
   {
     href: '/investors',
     label: 'Investors',
@@ -66,7 +76,7 @@ const navItems = [
   },
 ];
 
-const bottomItems = [
+const bottomItems: NavItem[] = [
   {
     href: '/settings',
     label: 'Settings',
@@ -83,7 +93,7 @@ const bottomItems = [
   },
 ];
 
-const colorClasses: Record<string, { active: string; icon: string; hover: string }> = {
+const colorClasses: Record<ColorKey, { active: string; icon: string; hover: string }> = {
   blue: {
     active: 'bg-blue-600 text-white shadow-lg shadow-blue-500/20',
     icon: 'text-blue-500',
