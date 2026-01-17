@@ -51,7 +51,8 @@ export function CampaignCard({ campaign, onMenuClick }: CampaignCardProps) {
                 e.stopPropagation();
                 onMenuClick(campaign);
               }}
-              className="p-1 text-gray-500 hover:text-black hover:bg-gray-100 rounded transition-colors opacity-0 group-hover:opacity-100"
+              className="p-2 -m-1 text-gray-500 hover:text-black hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors md:opacity-0 md:group-hover:opacity-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Campaign options"
             >
               <MoreHorizontal className="w-5 h-5" />
             </button>

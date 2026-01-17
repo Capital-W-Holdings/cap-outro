@@ -18,6 +18,7 @@ import {
 import { useState, useEffect } from 'react';
 import { useMobileSidebar } from '@/contexts/mobile-sidebar-context';
 import { HelpTooltip } from '@/components/ui/help-tooltip';
+import { SetupProgressSidebar } from '@/components/onboarding';
 
 // Nav items ordered by workflow: Build database → Create campaign → Write templates → Set up sequences → Track pipeline → Monitor outreach
 const navItems = [
@@ -126,6 +127,9 @@ export function Sidebar() {
           </button>
         )}
       </div>
+
+      {/* Setup Progress - Sidebar Card */}
+      {(isMobile || !collapsed) && <SetupProgressSidebar />}
 
       {/* Main Nav */}
       <nav className="flex-1 p-3 space-y-1">

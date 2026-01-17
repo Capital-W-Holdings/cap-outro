@@ -48,16 +48,16 @@ export function OutreachList({ campaignId, investorId }: OutreachListProps) {
   return (
     <div>
       {/* Filters */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6">
         <Select
           options={statusOptions}
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as OutreachStatus | '')}
-          className="w-48"
+          className="w-full sm:w-48"
         />
-        
-        <div className="flex-1" />
-        
+
+        <div className="hidden sm:block flex-1" />
+
         <div className="text-sm text-gray-400">
           {outreach?.length ?? 0} outreach{outreach?.length !== 1 ? '' : ''}
         </div>

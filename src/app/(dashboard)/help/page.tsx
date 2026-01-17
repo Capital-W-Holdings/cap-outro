@@ -106,7 +106,7 @@ export default function HelpPage() {
         subtitle="Learn how to use Cap Outro effectively"
       />
 
-      <div className="flex-1 p-6 overflow-auto">
+      <div className="flex-1 p-4 sm:p-6 overflow-auto">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Search */}
           <div className="relative">
@@ -189,11 +189,11 @@ export default function HelpPage() {
               Keyboard Shortcuts
             </h2>
             <Card>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {shortcuts.map((shortcut, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <span className="text-gray-400">{shortcut.description}</span>
-                    <div className="flex items-center gap-1">
+                  <div key={index} className="flex items-center justify-between gap-2 py-1">
+                    <span className="text-gray-400 text-sm sm:text-base">{shortcut.description}</span>
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       {shortcut.keys.map((key, keyIndex) => (
                         <kbd
                           key={keyIndex}

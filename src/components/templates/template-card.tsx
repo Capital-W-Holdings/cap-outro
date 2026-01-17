@@ -47,12 +47,12 @@ export function TemplateCard({ template, onEdit, onDelete, onDuplicate }: Templa
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
           {onEdit && (
             <button
               onClick={() => onEdit(template)}
-              className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded transition-colors"
-              title="Edit"
+              className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Edit template"
             >
               <Edit className="w-4 h-4" />
             </button>
@@ -60,8 +60,8 @@ export function TemplateCard({ template, onEdit, onDelete, onDuplicate }: Templa
           {onDuplicate && (
             <button
               onClick={() => onDuplicate(template)}
-              className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded transition-colors"
-              title="Duplicate"
+              className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Duplicate template"
             >
               <Copy className="w-4 h-4" />
             </button>
@@ -69,8 +69,8 @@ export function TemplateCard({ template, onEdit, onDelete, onDuplicate }: Templa
           {onDelete && (
             <button
               onClick={() => onDelete(template)}
-              className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded transition-colors"
-              title="Delete"
+              className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 active:bg-red-50 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Delete template"
             >
               <Trash2 className="w-4 h-4" />
             </button>

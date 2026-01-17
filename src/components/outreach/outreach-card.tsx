@@ -145,10 +145,13 @@ export function OutreachCard({ outreach, onView, onResend, onCancel, onDelete }:
         </div>
 
         {/* Menu */}
-        <div onClick={(e) => e.stopPropagation()}>
+        <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
           <Dropdown
             trigger={
-              <button className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded opacity-0 group-hover:opacity-100 transition-all">
+              <button
+                className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 active:bg-gray-200 rounded-lg md:opacity-0 md:group-hover:opacity-100 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
+                aria-label="Outreach options"
+              >
                 <MoreHorizontal className="w-5 h-5" />
               </button>
             }

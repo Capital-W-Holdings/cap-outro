@@ -201,9 +201,9 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">{sequence.name}</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{sequence.name}</h2>
           <p className={`text-sm capitalize ${statusColor}`}>
             {sequence.status}
           </p>
@@ -215,11 +215,12 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
             onClick={handleToggleStatus}
             isLoading={isUpdating}
             leftIcon={sequence.status === 'active' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            className="flex-1 sm:flex-none"
           >
-            {sequence.status === 'active' ? 'Pause' : 'Activate'}
+            <span className="sm:inline">{sequence.status === 'active' ? 'Pause' : 'Activate'}</span>
           </Button>
-          <Button variant="outline" leftIcon={<Settings className="w-4 h-4" />}>
-            Settings
+          <Button variant="outline" leftIcon={<Settings className="w-4 h-4" />} className="flex-1 sm:flex-none">
+            <span className="hidden sm:inline">Settings</span>
           </Button>
         </div>
       </div>

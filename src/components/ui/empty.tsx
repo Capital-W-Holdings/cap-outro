@@ -16,11 +16,11 @@ export interface EmptyStateProps {
 
 export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center">
-      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-        {icon ?? <Inbox className="w-8 h-8 text-gray-500" />}
+    <div className="flex flex-col items-center justify-center p-6 sm:p-12 text-center">
+      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+        {icon ?? <Inbox className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />}
       </div>
-      <h3 className="text-lg font-semibold text-black mb-2">{title}</h3>
+      <h3 className="text-base sm:text-lg font-semibold text-black mb-2">{title}</h3>
       {description && (
         <p className="text-gray-500 mb-6 max-w-md">{description}</p>
       )}

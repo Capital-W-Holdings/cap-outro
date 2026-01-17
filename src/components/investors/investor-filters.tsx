@@ -160,10 +160,10 @@ export function InvestorFiltersBar({ filters, onChange }: InvestorFiltersProps) 
                 <button
                   key={stage.value}
                   onClick={() => toggleStage(stage.value)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  className={`px-3 py-2 sm:py-1.5 rounded-full text-xs font-medium transition-colors min-h-[36px] sm:min-h-0 ${
                     filters.stages?.includes(stage.value)
                       ? 'bg-black text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
                   }`}
                 >
                   {stage.label}
@@ -185,10 +185,10 @@ export function InvestorFiltersBar({ filters, onChange }: InvestorFiltersProps) 
                 <button
                   key={sector.value}
                   onClick={() => toggleSector(sector.value)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  className={`px-3 py-2 sm:py-1.5 rounded-full text-xs font-medium transition-colors min-h-[36px] sm:min-h-0 ${
                     filters.sectors?.includes(sector.value)
                       ? 'bg-black text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
                   }`}
                 >
                   {sector.label}

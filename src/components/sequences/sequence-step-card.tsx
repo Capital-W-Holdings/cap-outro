@@ -19,10 +19,10 @@ const stepIcons: Record<StepType, typeof Mail> = {
 };
 
 const stepColors: Record<StepType, string> = {
-  email: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  linkedin: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-  task: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  wait: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+  email: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  linkedin: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20',
+  task: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
+  wait: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
 };
 
 const stepLabels: Record<StepType, string> = {
@@ -53,15 +53,15 @@ export function SequenceStepCard({ step, index, onEdit, onDelete }: SequenceStep
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
             <span className="text-sm font-medium text-gray-400">Step {index + 1}</span>
-            <span className="text-xs text-gray-600">•</span>
+            <span className="text-xs text-gray-600 hidden sm:inline">•</span>
             <span className={`px-2 py-0.5 rounded text-xs font-medium ${colorClass}`}>
               {stepLabels[step.type]}
             </span>
             {step.delay_days > 0 && (
               <>
-                <span className="text-xs text-gray-600">•</span>
+                <span className="text-xs text-gray-600 hidden sm:inline">•</span>
                 <span className="text-xs text-gray-500">
                   {step.delay_days} day{step.delay_days !== 1 ? 's' : ''} delay
                 </span>
@@ -69,7 +69,7 @@ export function SequenceStepCard({ step, index, onEdit, onDelete }: SequenceStep
             )}
             {step.template_id && (
               <>
-                <span className="text-xs text-gray-600">•</span>
+                <span className="text-xs text-gray-600 hidden sm:inline">•</span>
                 <span className="text-xs text-green-500 flex items-center gap-1">
                   <FileText className="w-3 h-3" />
                   Template
@@ -105,11 +105,12 @@ export function SequenceStepCard({ step, index, onEdit, onDelete }: SequenceStep
         </div>
 
         {/* Actions */}
-        <div className="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex-shrink-0 flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           {onEdit && (
             <button
               onClick={() => onEdit(step)}
-              className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+              className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Edit step"
             >
               <Edit className="w-4 h-4" />
             </button>
@@ -117,7 +118,8 @@ export function SequenceStepCard({ step, index, onEdit, onDelete }: SequenceStep
           {onDelete && (
             <button
               onClick={() => onDelete(step)}
-              className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+              className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 active:bg-red-100 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Delete step"
             >
               <Trash2 className="w-4 h-4" />
             </button>

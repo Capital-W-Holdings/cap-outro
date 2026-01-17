@@ -14,11 +14,11 @@ export function ErrorState({ error, onRetry, showHome = false }: ErrorStateProps
   const message = typeof error === 'string' ? error : error.message;
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center">
-      <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
-        <AlertCircle className="w-6 h-6 text-red-500" />
+    <div className="flex flex-col items-center justify-center p-6 sm:p-8 text-center">
+      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+        <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
       </div>
-      <h3 className="text-lg font-semibold text-black mb-2">Something went wrong</h3>
+      <h3 className="text-base sm:text-lg font-semibold text-black mb-2">Something went wrong</h3>
       <p className="text-gray-500 mb-6 max-w-md">{message}</p>
       <div className="flex gap-3">
         {onRetry && (

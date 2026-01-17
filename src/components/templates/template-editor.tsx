@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Save, Eye, Code, Variable } from 'lucide-react';
+import { Save, Eye, Code, Variable, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, Button, Input, Select, type SelectOption } from '@/components/ui';
 import { useCreateTemplate, useUpdateTemplate } from '@/hooks';
 import { extractTemplateVariables, interpolateTemplate, type TemplateVariables } from '@/lib/email';
@@ -43,6 +43,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
   const [subject, setSubject] = useState(template?.subject ?? '');
   const [body, setBody] = useState(template?.body ?? '');
   const [showPreview, setShowPreview] = useState(false);
+  const [showVariables, setShowVariables] = useState(false);
 
   const { mutate: createTemplate, isLoading: isCreating } = useCreateTemplate();
   const { mutate: updateTemplate, isLoading: isUpdating } = useUpdateTemplate(template?.id ?? '');
@@ -91,23 +92,62 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
     }
   };
 
+  // Variables sidebar content - shared between desktop sidebar and mobile collapsible
+  const VariablesContent = () => (
+    <div className="space-y-3">
+      <div>
+        <p className="text-xs text-gray-500 mb-2">Used in template ({variables.length})</p>
+        <div className="flex flex-wrap gap-1">
+          {variables.length > 0 ? (
+            variables.map((v) => (
+              <span key={v} className="px-2 py-0.5 bg-gray-100 text-black text-xs rounded">
+                {v}
+              </span>
+            ))
+          ) : (
+            <span className="text-xs text-gray-500">No variables used</span>
+          )}
+        </div>
+      </div>
+
+      <div className="border-t border-gray-200 pt-3">
+        <p className="text-xs text-gray-500 mb-2">Available variables</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1 max-h-64 overflow-y-auto">
+          {Object.keys(sampleVariables).map((v) => (
+            <button
+              key={v}
+              onClick={() => insertVariable(v)}
+              className="flex items-center justify-between w-full px-2 py-2 sm:py-1.5 text-left text-sm rounded hover:bg-gray-100 active:bg-gray-200 transition-colors group min-h-[44px] sm:min-h-0"
+            >
+              <code className="text-gray-700 text-xs sm:text-sm">{`{{${v}}}`}</code>
+              <span className="text-xs text-brand-gold sm:text-gray-500 sm:opacity-0 sm:group-hover:opacity-100">
+                Insert
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-black">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-black">
           {isEdit ? 'Edit Template' : 'Create Template'}
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="outline"
             onClick={() => setShowPreview(!showPreview)}
             leftIcon={showPreview ? <Code className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            className="flex-1 sm:flex-none"
           >
-            {showPreview ? 'Edit' : 'Preview'}
+            <span className="sm:inline">{showPreview ? 'Edit' : 'Preview'}</span>
           </Button>
           {onCancel && (
-            <Button variant="ghost" onClick={onCancel}>
+            <Button variant="ghost" onClick={onCancel} className="flex-1 sm:flex-none">
               Cancel
             </Button>
           )}
@@ -117,16 +157,46 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
             isLoading={isLoading}
             disabled={!name || !subject || !body}
             leftIcon={<Save className="w-4 h-4" />}
+            className="flex-1 sm:flex-none"
           >
-            {isEdit ? 'Save Changes' : 'Create Template'}
+            <span className="hidden sm:inline">{isEdit ? 'Save Changes' : 'Create Template'}</span>
+            <span className="sm:hidden">Save</span>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      {/* Mobile: Collapsible Variables Panel */}
+      <div className="lg:hidden">
+        <button
+          onClick={() => setShowVariables(!showVariables)}
+          className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Variable className="w-4 h-4 text-black" />
+            <span className="font-medium text-black">Variables</span>
+            {variables.length > 0 && (
+              <span className="px-1.5 py-0.5 bg-brand-gold/10 text-brand-gold text-xs rounded">
+                {variables.length} used
+              </span>
+            )}
+          </div>
+          {showVariables ? (
+            <ChevronUp className="w-5 h-5 text-gray-500" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-gray-500" />
+          )}
+        </button>
+        {showVariables && (
+          <div className="mt-2 p-4 bg-white border border-gray-200 rounded-lg">
+            <VariablesContent />
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Editor */}
-        <div className="col-span-2 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Template Name"
               placeholder="e.g., Cold Outreach - Series A"
@@ -152,12 +222,12 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
             <Card>
               <div className="mb-4">
                 <p className="text-xs text-gray-500 mb-1">Subject</p>
-                <p className="text-black font-medium">{preview.subject || 'No subject'}</p>
+                <p className="text-black font-medium break-words">{preview.subject || 'No subject'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 mb-1">Body</p>
                 <div
-                  className="prose prose-sm max-w-none text-black"
+                  className="prose prose-sm max-w-none text-black break-words"
                   dangerouslySetInnerHTML={{ __html: preview.body || '<p class="text-gray-500">No content</p>' }}
                 />
               </div>
@@ -170,7 +240,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
               <textarea
                 id="template-body"
                 className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none font-mono text-sm"
-                rows={15}
+                rows={10}
                 placeholder="<p>Hi {{investor_first_name}},</p>..."
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
@@ -182,48 +252,14 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
           )}
         </div>
 
-        {/* Variables Sidebar */}
-        <div className="space-y-4">
+        {/* Desktop: Variables Sidebar */}
+        <div className="hidden lg:block space-y-4">
           <Card>
             <div className="flex items-center gap-2 mb-4">
               <Variable className="w-4 h-4 text-black" />
               <h3 className="font-medium text-black">Variables</h3>
             </div>
-
-            <div className="space-y-3">
-              <div>
-                <p className="text-xs text-gray-500 mb-2">Used in template ({variables.length})</p>
-                <div className="flex flex-wrap gap-1">
-                  {variables.length > 0 ? (
-                    variables.map((v) => (
-                      <span key={v} className="px-2 py-0.5 bg-gray-100 text-black text-xs rounded">
-                        {v}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-xs text-gray-500">No variables used</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="border-t border-gray-200 pt-3">
-                <p className="text-xs text-gray-500 mb-2">Available variables</p>
-                <div className="space-y-1 max-h-64 overflow-y-auto">
-                  {Object.keys(sampleVariables).map((v) => (
-                    <button
-                      key={v}
-                      onClick={() => insertVariable(v)}
-                      className="flex items-center justify-between w-full px-2 py-1.5 text-left text-sm rounded hover:bg-gray-100 transition-colors group"
-                    >
-                      <code className="text-gray-700">{`{{${v}}}`}</code>
-                      <span className="text-xs text-gray-500 opacity-0 group-hover:opacity-100">
-                        Insert
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <VariablesContent />
           </Card>
 
           <Card>
@@ -236,6 +272,19 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
             </ul>
           </Card>
         </div>
+      </div>
+
+      {/* Mobile: Tips Card */}
+      <div className="lg:hidden">
+        <Card>
+          <h3 className="font-medium text-black mb-2">Tips</h3>
+          <ul className="text-sm text-gray-600 space-y-1">
+            <li>• Keep subject lines under 50 characters</li>
+            <li>• Personalize with investor name and firm</li>
+            <li>• Include a clear call-to-action</li>
+            <li>• Test with the preview before sending</li>
+          </ul>
+        </Card>
       </div>
     </div>
   );

@@ -24,7 +24,7 @@ export function InvestorCard({ investor, onSelect, onToggleSelect, onMenuClick, 
     (investor.fit_score ?? 0) >= 80 ? 'text-green-600' :
     (investor.fit_score ?? 0) >= 60 ? 'text-yellow-600' :
     (investor.fit_score ?? 0) >= 40 ? 'text-orange-500' :
-    'text-gray-400';
+    'text-gray-500';
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();

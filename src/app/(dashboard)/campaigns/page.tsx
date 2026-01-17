@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Header } from '@/components/layout';
 import { CampaignList, CreateCampaignModal } from '@/components/campaigns';
+import { SetupProgress } from '@/components/onboarding';
 
 export default function CampaignsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -29,7 +30,11 @@ export default function CampaignsPage() {
         }}
       />
 
-      <div className="flex-1 p-4 sm:p-6 overflow-auto">
+      <div className="flex-1 p-4 sm:p-6 overflow-auto space-y-6">
+        {/* Setup Progress Checklist */}
+        <SetupProgress />
+
+        {/* Campaign List */}
         <CampaignList
           key={refreshKey}
           onCreateCampaign={handleCreateCampaign}
