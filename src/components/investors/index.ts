@@ -1,6 +1,7 @@
 export * from './investor-card';
 export * from './investor-list';
 export * from './import-investors-modal';
+export * from './add-investor-modal';
 export * from './bulk-action-bar';
 export * from './investor-filters';
 export * from './investor-edit-modal';

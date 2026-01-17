@@ -18,6 +18,7 @@ interface HeaderProps {
     label: string;
     onClick: () => void;
   };
+  customAction?: React.ReactNode;
   showSearch?: boolean;
   onSearch?: (query: string) => void;
 }
@@ -26,6 +27,7 @@ export function Header({
   title,
   subtitle,
   action,
+  customAction,
   showSearch = false,
   onSearch,
 }: HeaderProps) {
@@ -160,7 +162,10 @@ export function Header({
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-        {action && (
+        {customAction && (
+          <div className="hidden sm:block">{customAction}</div>
+        )}
+        {action && !customAction && (
           <Button
             variant="primary"
             onClick={action.onClick}
@@ -171,7 +176,7 @@ export function Header({
           </Button>
         )}
         {/* Mobile-only compact action button */}
-        {action && (
+        {action && !customAction && (
           <Button
             variant="primary"
             onClick={action.onClick}
@@ -180,6 +185,9 @@ export function Header({
           >
             <Plus className="w-4 h-4" />
           </Button>
+        )}
+        {customAction && (
+          <div className="sm:hidden">{customAction}</div>
         )}
 
         {/* Notifications */}

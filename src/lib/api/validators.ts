@@ -36,10 +36,10 @@ export const bulkImportSchema = z.object({
   investors: z.array(
     z.object({
       name: z.string().min(1),
-      email: z.string().email().optional().or(z.literal('')),
+      email: z.string().optional(), // Validate on server side
       firm: z.string().optional(),
       title: z.string().optional(),
-      linkedin_url: z.string().url().optional().or(z.literal('')),
+      linkedin_url: z.string().optional(), // Validate on server side
     })
   ).min(1, 'At least one investor required').max(1000, 'Maximum 1000 investors per import'),
 });

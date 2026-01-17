@@ -1,16 +1,18 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
+import { Plus, Upload, ChevronDown } from 'lucide-react';
 import { Header } from '@/components/layout';
-import { InvestorList, ImportInvestorsModal, InvestorDetailModal, InvestorEditModal, BulkActionBar } from '@/components/investors';
+import { InvestorList, ImportInvestorsModal, AddInvestorModal, InvestorDetailModal, InvestorEditModal, BulkActionBar } from '@/components/investors';
 import { InvestorFiltersBar, ActiveFilterChips } from '@/components/investors/investor-filters';
-import { Modal, ModalFooter, Button, Select } from '@/components/ui';
+import { Modal, ModalFooter, Button, Select, Dropdown } from '@/components/ui';
 import { useSequences } from '@/hooks';
 import type { InvestorFilters } from '@/hooks/use-investors';
 import type { Investor } from '@/types';
 
 export default function InvestorsPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<InvestorFilters>({});
   const [refreshKey, setRefreshKey] = useState(0);
@@ -40,7 +42,11 @@ export default function InvestorsPage() {
   );
 
   const handleAddInvestor = useCallback(() => {
-    setIsImportModalOpen(true);
+    setIsAddModalOpen(true);
+  }, []);
+
+  const handleAddSuccess = useCallback(() => {
+    setRefreshKey((k) => k + 1);
   }, []);
 
   const handleImportSuccess = useCallback(() => {
@@ -157,10 +163,28 @@ export default function InvestorsPage() {
         subtitle="Manage your investor database"
         showSearch
         onSearch={handleSearch}
-        action={{
-          label: 'Import CSV',
-          onClick: () => setIsImportModalOpen(true),
-        }}
+        customAction={
+          <Dropdown
+            trigger={
+              <Button variant="primary" rightIcon={<ChevronDown className="w-4 h-4" />}>
+                <Plus className="w-4 h-4 mr-1" />
+                Add
+              </Button>
+            }
+            items={[
+              {
+                label: 'Add Investor',
+                icon: <Plus className="w-4 h-4" />,
+                onClick: () => setIsAddModalOpen(true),
+              },
+              {
+                label: 'Import CSV',
+                icon: <Upload className="w-4 h-4" />,
+                onClick: () => setIsImportModalOpen(true),
+              },
+            ]}
+          />
+        }
       />
 
       <div className="flex-1 p-4 sm:p-6 overflow-auto">
@@ -187,6 +211,13 @@ export default function InvestorsPage() {
         selectedCount={selectedIds.length}
         onClearSelection={handleClearSelection}
         onAddToSequence={handleAddToSequence}
+      />
+
+      {/* Add Investor Modal */}
+      <AddInvestorModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={handleAddSuccess}
       />
 
       {/* Import Modal */}
