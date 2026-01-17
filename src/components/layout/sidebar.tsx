@@ -10,26 +10,74 @@ import {
   GitBranch,
   FileText,
   Settings,
-  HelpCircle,
+  HelpCircle as HelpCircleIcon,
   ChevronLeft,
   ChevronRight,
   X,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useMobileSidebar } from '@/contexts/mobile-sidebar-context';
+import { HelpTooltip } from '@/components/ui/help-tooltip';
 
+// Nav items ordered by workflow: Build database → Create campaign → Write templates → Set up sequences → Track pipeline → Monitor outreach
 const navItems = [
-  { href: '/campaigns', label: 'Campaigns', icon: LayoutDashboard },
-  { href: '/investors', label: 'Investors', icon: Users },
-  { href: '/pipeline', label: 'Pipeline', icon: Kanban },
-  { href: '/templates', label: 'Templates', icon: FileText },
-  { href: '/sequences', label: 'Sequences', icon: GitBranch },
-  { href: '/outreach', label: 'Outreach', icon: Mail },
+  {
+    href: '/investors',
+    label: 'Investors',
+    icon: Users,
+    help: 'Step 1: Build your investor database. Import from CSV or add manually.',
+    step: 1,
+  },
+  {
+    href: '/campaigns',
+    label: 'Campaigns',
+    icon: LayoutDashboard,
+    help: 'Step 2: Create a campaign to organize your fundraise (e.g., "Series A 2024").',
+    step: 2,
+  },
+  {
+    href: '/templates',
+    label: 'Templates',
+    icon: FileText,
+    help: 'Step 3: Write email templates with merge fields like {{investor_name}}.',
+    step: 3,
+  },
+  {
+    href: '/sequences',
+    label: 'Sequences',
+    icon: GitBranch,
+    help: 'Step 4: Create automated email sequences using your templates.',
+    step: 4,
+  },
+  {
+    href: '/pipeline',
+    label: 'Pipeline',
+    icon: Kanban,
+    help: 'Step 5: Track investor progress from first contact to close.',
+    step: 5,
+  },
+  {
+    href: '/outreach',
+    label: 'Outreach',
+    icon: Mail,
+    help: 'Step 6: Monitor all scheduled and sent communications.',
+    step: 6,
+  },
 ];
 
 const bottomItems = [
-  { href: '/settings', label: 'Settings', icon: Settings },
-  { href: '/support', label: 'Support', icon: HelpCircle },
+  {
+    href: '/settings',
+    label: 'Settings',
+    icon: Settings,
+    help: 'Configure your email account and preferences.',
+  },
+  {
+    href: '/support',
+    label: 'Support',
+    icon: HelpCircleIcon,
+    help: 'Get help and contact support.',
+  },
 ];
 
 export function Sidebar() {
@@ -86,21 +134,29 @@ export function Sidebar() {
           const Icon = item.icon;
 
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`
-                flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-                ${isActive
-                  ? 'bg-black text-white'
-                  : 'text-gray-600 hover:text-black hover:bg-gray-100'
-                }
-              `}
-              title={!isMobile && collapsed ? item.label : undefined}
-            >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              {(isMobile || !collapsed) && <span className="font-medium text-sm">{item.label}</span>}
-            </Link>
+            <div key={item.href} className="flex items-center">
+              <Link
+                href={item.href}
+                className={`
+                  flex-1 flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+                  ${isActive
+                    ? 'bg-black text-white'
+                    : 'text-gray-600 hover:text-black hover:bg-gray-100'
+                  }
+                `}
+                title={!isMobile && collapsed ? item.label : undefined}
+              >
+                <Icon className="w-5 h-5 flex-shrink-0" />
+                {(isMobile || !collapsed) && (
+                  <span className="font-medium text-sm">{item.label}</span>
+                )}
+              </Link>
+              {(isMobile || !collapsed) && (
+                <div className={`ml-1 ${isActive ? 'text-gray-400' : ''}`}>
+                  <HelpTooltip content={item.help} />
+                </div>
+              )}
+            </div>
           );
         })}
       </nav>
@@ -112,21 +168,29 @@ export function Sidebar() {
           const Icon = item.icon;
 
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`
-                flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-                ${isActive
-                  ? 'bg-black text-white'
-                  : 'text-gray-600 hover:text-black hover:bg-gray-100'
-                }
-              `}
-              title={!isMobile && collapsed ? item.label : undefined}
-            >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              {(isMobile || !collapsed) && <span className="font-medium text-sm">{item.label}</span>}
-            </Link>
+            <div key={item.href} className="flex items-center">
+              <Link
+                href={item.href}
+                className={`
+                  flex-1 flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+                  ${isActive
+                    ? 'bg-black text-white'
+                    : 'text-gray-600 hover:text-black hover:bg-gray-100'
+                  }
+                `}
+                title={!isMobile && collapsed ? item.label : undefined}
+              >
+                <Icon className="w-5 h-5 flex-shrink-0" />
+                {(isMobile || !collapsed) && (
+                  <span className="font-medium text-sm">{item.label}</span>
+                )}
+              </Link>
+              {(isMobile || !collapsed) && (
+                <div className={`ml-1 ${isActive ? 'text-gray-400' : ''}`}>
+                  <HelpTooltip content={item.help} />
+                </div>
+              )}
+            </div>
           );
         })}
 
