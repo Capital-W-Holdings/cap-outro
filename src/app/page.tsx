@@ -1,28 +1,31 @@
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Zap, Target, GitBranch, BarChart3, Kanban, Sparkles, Play } from 'lucide-react';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="border-b border-gray-200">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xl font-bold text-black tracking-tight">
-                CAP OUTRO
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <span className="text-white text-sm font-bold">CO</span>
+              </div>
+              <span className="text-xl font-semibold text-gray-900 tracking-tight">
+                Cap Outro
               </span>
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
               <Link
                 href="/login"
-                className="text-sm text-gray-600 hover:text-black transition-colors"
+                className="text-sm text-gray-600 hover:text-gray-900 transition-colors px-4 py-2"
               >
                 Sign in
               </Link>
               <Link
                 href="/signup"
-                className="text-sm font-medium text-white bg-black px-4 py-2 hover:bg-gray-800 transition-colors"
+                className="text-sm font-medium text-white bg-gray-900 px-5 py-2.5 rounded-full hover:bg-gray-800 transition-all shadow-lg shadow-gray-900/10"
               >
                 Get started
               </Link>
@@ -32,130 +35,229 @@ export default function HomePage() {
       </nav>
 
       {/* Hero */}
-      <section className="py-24 px-6">
-        <div className="max-w-4xl mx-auto">
-          <p className="font-mono text-sm text-gray-500 mb-6 tracking-wide">
-            ////// INVESTOR OUTREACH PLATFORM
-          </p>
-          <h1 className="font-mono text-4xl sm:text-5xl lg:text-6xl font-bold text-black mb-8 leading-tight">
-            Stop cold calling investors.
+      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
+        {/* Subtle gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 via-white to-white" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-violet-100/40 to-transparent rounded-full blur-3xl" />
+        <div className="absolute top-20 left-0 w-[400px] h-[400px] bg-gradient-to-br from-blue-100/40 to-transparent rounded-full blur-3xl" />
+
+        <div className="relative max-w-5xl mx-auto text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 mb-8">
+            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <span className="text-sm font-medium text-blue-700">AI-Powered Investor Outreach</span>
+          </div>
+
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-8 leading-[1.05] tracking-tight text-gray-900">
+            Close your round
             <br />
-            Start closing rounds.
+            <span className="bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600 bg-clip-text text-transparent">
+              at warp speed
+            </span>
           </h1>
-          <p className="text-lg text-gray-600 mb-10 max-w-2xl leading-relaxed">
-            AI-powered investor outreach that transforms your messy investor lists into
-            sequenced, personalized campaigns with real-time engagement tracking.
+
+          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
+            Transform investor outreach with AI-powered personalization,
+            automated sequences, and real-time engagement tracking.
           </p>
-          <div className="flex items-center gap-4">
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/signup"
-              className="inline-flex items-center gap-2 text-white bg-black px-6 py-3 font-medium hover:bg-gray-800 transition-colors"
+              className="group inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-violet-600 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all"
             >
               Start free trial
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              href="#features"
-              className="inline-flex items-center gap-2 text-black border border-black px-6 py-3 font-medium hover:bg-black hover:text-white transition-colors"
+              href="#demo"
+              className="inline-flex items-center gap-2 text-gray-700 bg-white border border-gray-200 px-8 py-4 rounded-full font-semibold text-lg hover:border-gray-300 hover:shadow-lg transition-all"
             >
-              See how it works
+              <Play className="w-5 h-5 text-violet-600" />
+              Watch demo
             </Link>
           </div>
         </div>
       </section>
 
       {/* Stats */}
-      <section className="py-16 px-6 border-t border-gray-200">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <StatCard label="Investors" value="4,700+" />
-            <StatCard label="Response Rate" value="3x" />
-            <StatCard label="Time Saved" value="80%" />
-            <StatCard label="Rounds Closed" value="$50M+" />
+      <section className="py-16 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 p-8 rounded-3xl bg-gradient-to-r from-gray-50 to-gray-100/50 border border-gray-100">
+            <StatCard value="4,700+" label="Investors" color="blue" />
+            <StatCard value="3x" label="Response rate" color="violet" />
+            <StatCard value="80%" label="Time saved" color="purple" />
+            <StatCard value="$50M+" label="Raised" color="emerald" />
           </div>
         </div>
       </section>
 
       {/* Features */}
-      <section id="features" className="py-24 px-6 border-t border-gray-200">
+      <section id="features" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
-          <p className="font-mono text-sm text-gray-500 mb-4 tracking-wide">
-            ////// FEATURES
-          </p>
-          <h2 className="font-mono text-3xl font-bold text-black mb-16">
-            Everything you need to close your round
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="text-center mb-16">
+            <p className="text-blue-600 text-sm font-semibold tracking-wider uppercase mb-4">Features</p>
+            <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
+              Built for velocity
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Everything you need to close your round faster than ever.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
-              marker="01"
-              title="Investor-Deal Fit Scoring"
-              description="AI matches your raise to investor thesis, check size, and stage preferences. No more wasted outreach."
+              icon={<Target className="w-6 h-6" />}
+              title="Investor-Deal Fit"
+              description="AI matches your raise to investor thesis, check size, and stage preferences."
+              color="blue"
             />
             <FeatureCard
-              marker="02"
-              title="Warm Path Detection"
-              description="Find the shortest path to a warm intro through your network. Stop going in cold."
+              icon={<GitBranch className="w-6 h-6" />}
+              title="Warm Intros"
+              description="Find the shortest path to a warm intro through your network."
+              color="violet"
             />
             <FeatureCard
-              marker="03"
-              title="Sequence Orchestration"
-              description="Multi-touch campaigns with optimal timing. Automated follow-ups that feel personal."
+              icon={<Zap className="w-6 h-6" />}
+              title="Auto Sequences"
+              description="Multi-touch campaigns with optimal timing and automated follow-ups."
+              color="amber"
             />
             <FeatureCard
-              marker="04"
-              title="Conversion Intelligence"
-              description="Track opened → replied → meeting → committed in real-time. Know exactly where you stand."
+              icon={<BarChart3 className="w-6 h-6" />}
+              title="Live Tracking"
+              description="Track opens, replies, and meetings in real-time."
+              color="emerald"
             />
             <FeatureCard
-              marker="05"
-              title="Pipeline Management"
-              description="Kanban view of your raise. Move investors through stages with one click."
+              icon={<Kanban className="w-6 h-6" />}
+              title="Pipeline View"
+              description="Kanban board to track investors through every stage."
+              color="purple"
             />
             <FeatureCard
-              marker="06"
+              icon={<Sparkles className="w-6 h-6" />}
               title="AI Personalization"
-              description="Every email tailored to the investor. Increase response rates by 3x."
+              description="Every email tailored to the investor automatically."
+              color="rose"
             />
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section id="demo" className="py-24 px-6 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-violet-600 text-sm font-semibold tracking-wider uppercase mb-4">How It Works</p>
+            <h2 className="text-4xl sm:text-5xl font-bold text-gray-900">
+              Three steps to funded
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <StepCard
+              number="01"
+              title="Import investors"
+              description="Upload CSV or connect CRM. We enrich with thesis, check size, and portfolio data."
+              color="blue"
+            />
+            <StepCard
+              number="02"
+              title="Build sequences"
+              description="Create personalized email sequences with AI. Set timing and track engagement."
+              color="violet"
+            />
+            <StepCard
+              number="03"
+              title="Close your round"
+              description="Monitor responses, book meetings, and move investors through your pipeline."
+              color="emerald"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonial */}
+      <section className="py-24 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative rounded-3xl bg-gradient-to-br from-blue-600 via-violet-600 to-purple-600 p-10 sm:p-16 text-white overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
+
+            <div className="relative">
+              <div className="flex items-center gap-1 mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} className="w-5 h-5 text-yellow-300 fill-current" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <blockquote className="text-2xl sm:text-3xl font-medium mb-8 leading-relaxed">
+                "Cap Outro helped us close our $4M seed in 6 weeks. Response rate went from 5% to 18%."
+              </blockquote>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center font-bold">
+                  JM
+                </div>
+                <div>
+                  <p className="font-semibold">Jessica Martinez</p>
+                  <p className="text-white/70">CEO, TechFlow (YC W24)</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-24 px-6 bg-black text-white">
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="font-mono text-sm text-gray-400 mb-4 tracking-wide">
-            ////// GET STARTED
-          </p>
-          <h2 className="font-mono text-3xl font-bold mb-6">
-            Ready to transform your raise?
+      <section className="py-24 px-6 bg-gray-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-violet-600/20 to-purple-600/20" />
+
+        <div className="relative max-w-3xl mx-auto text-center">
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+            Ready to accelerate?
           </h2>
-          <p className="text-gray-400 mb-10 text-lg">
-            Join hundreds of founders who have used Cap Outro to close their rounds faster.
+          <p className="text-xl text-gray-400 mb-10">
+            Join 500+ founders who closed faster with Cap Outro.
           </p>
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 font-medium hover:bg-gray-100 transition-colors"
+            className="group inline-flex items-center gap-2 bg-white text-gray-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-all shadow-xl"
           >
-            Get started for free
-            <ArrowRight className="w-4 h-4" />
+            Get started free
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
+          <p className="mt-6 text-sm text-gray-500">
+            No credit card required • Free 14-day trial
+          </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 py-8 px-6 bg-white">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-sm font-bold text-black">CAP OUTRO</span>
-            <span className="text-sm text-gray-400">© 2025</span>
-          </div>
-          <div className="flex items-center gap-6 text-sm text-gray-500">
-            <Link href="/privacy" className="hover:text-black transition-colors">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-black transition-colors">
-              Terms
-            </Link>
+      <footer className="border-t border-gray-100 py-12 px-6 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center">
+                <span className="text-white text-xs font-bold">CO</span>
+              </div>
+              <span className="font-semibold text-gray-900">Cap Outro</span>
+              <span className="text-sm text-gray-400">© 2025</span>
+            </div>
+            <div className="flex items-center gap-8 text-sm text-gray-500">
+              <Link href="/privacy" className="hover:text-gray-900 transition-colors">
+                Privacy
+              </Link>
+              <Link href="/terms" className="hover:text-gray-900 transition-colors">
+                Terms
+              </Link>
+              <Link href="/support" className="hover:text-gray-900 transition-colors">
+                Support
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
@@ -163,28 +265,68 @@ export default function HomePage() {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+const colorVariants = {
+  blue: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-100' },
+  violet: { bg: 'bg-violet-50', text: 'text-violet-600', border: 'border-violet-100' },
+  purple: { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-100' },
+  emerald: { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100' },
+  amber: { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100' },
+  rose: { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100' },
+};
+
+function StatCard({ value, label, color }: { value: string; label: string; color: keyof typeof colorVariants }) {
+  const colors = colorVariants[color];
   return (
     <div className="text-center">
-      <p className="font-mono text-3xl font-bold text-black mb-1">{value}</p>
+      <p className={`text-3xl sm:text-4xl font-bold ${colors.text} mb-1`}>{value}</p>
       <p className="text-sm text-gray-500">{label}</p>
     </div>
   );
 }
 
 function FeatureCard({
-  marker,
+  icon,
   title,
   description,
+  color,
 }: {
-  marker: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
+  color: keyof typeof colorVariants;
 }) {
+  const colors = colorVariants[color];
+
   return (
-    <div className="border border-gray-200 p-6 hover:border-gray-400 transition-colors bg-white">
-      <p className="font-mono text-xs text-gray-400 mb-4">{marker}</p>
-      <h3 className="font-mono text-lg font-semibold text-black mb-3">{title}</h3>
+    <div className="group rounded-2xl p-6 bg-white border border-gray-100 hover:border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+      <div className={`w-12 h-12 rounded-xl ${colors.bg} ${colors.text} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
+        {icon}
+      </div>
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+      <p className="text-gray-600 leading-relaxed">{description}</p>
+    </div>
+  );
+}
+
+function StepCard({
+  number,
+  title,
+  description,
+  color,
+}: {
+  number: string;
+  title: string;
+  description: string;
+  color: keyof typeof colorVariants;
+}) {
+  const colors = colorVariants[color];
+
+  return (
+    <div className="relative">
+      <div className={`text-6xl font-bold ${colors.text} opacity-20 mb-4`}>
+        {number}
+      </div>
+      <h3 className="text-xl font-semibold text-gray-900 mb-3">{title}</h3>
       <p className="text-gray-600 leading-relaxed">{description}</p>
     </div>
   );
