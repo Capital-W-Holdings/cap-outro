@@ -75,9 +75,9 @@ export function Header({
       onClick: () => router.push('/settings'),
     },
     {
-      label: 'Help & Support',
+      label: 'Support',
       icon: <HelpCircle className="w-4 h-4" />,
-      onClick: () => window.open('mailto:support@capoutro.com', '_blank'),
+      onClick: () => router.push('/support'),
     },
     {
       label: 'Sign Out',
