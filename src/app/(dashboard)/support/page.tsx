@@ -281,7 +281,7 @@ function GettingStartedSection() {
     {
       step: 2,
       title: 'Build Your Investor Database',
-      description: 'Import investors via CSV or browse our database of 20,000+ verified investors with contact information.',
+      description: 'Import investors via CSV or browse our database of thousands of verified investors with contact information.',
       icon: Users,
     },
     {
@@ -346,7 +346,7 @@ function InvestorsSection() {
     <div>
       <h1 className="text-3xl font-bold text-black mb-2">Investor Database</h1>
       <p className="text-gray-600 mb-8">
-        Cap Outro includes a database of 20,000+ investors with verified contact information. Learn how to search, filter, and manage your investor contacts.
+        Cap Outro includes a database of thousands of investors with verified contact information. Learn how to search, filter, and manage your investor contacts.
       </p>
 
       <div className="space-y-8">

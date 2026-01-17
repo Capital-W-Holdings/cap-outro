@@ -68,7 +68,7 @@ export default function HomePage() {
       <section className="py-16 px-6 border-t border-gray-200">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <StatCard label="Investors" value="20,000+" />
+            <StatCard label="Investors" value="4,700+" />
             <StatCard label="Response Rate" value="3x" />
             <StatCard label="Time Saved" value="80%" />
             <StatCard label="Rounds Closed" value="$50M+" />
