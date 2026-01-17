@@ -29,9 +29,9 @@ export default function LoginPage() {
   };
 
   return (
-    <Card padding="lg">
+    <Card padding="lg" className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
       <div className="text-center mb-8">
-        <h1 className="font-mono text-2xl font-bold text-black">Welcome back</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
         <p className="text-gray-500 mt-2">Sign in to your account</p>
       </div>
 
@@ -64,7 +64,7 @@ export default function LoginPage() {
           type="submit"
           variant="primary"
           isLoading={isLoading}
-          className="w-full"
+          className="w-full !bg-gradient-to-r !from-blue-600 !to-violet-600 hover:!shadow-lg hover:!shadow-blue-500/25"
         >
           Sign in
         </Button>
@@ -72,15 +72,15 @@ export default function LoginPage() {
 
       <div className="mt-6 text-center text-sm">
         <span className="text-gray-500">Don&apos;t have an account? </span>
-        <Link href="/signup" className="text-black font-medium hover:underline">
+        <Link href="/signup" className="text-blue-600 font-medium hover:text-violet-600 transition-colors">
           Sign up
         </Link>
       </div>
 
       {/* Demo notice */}
-      <div className="mt-8 p-3 bg-gray-100 border border-gray-200 text-center">
+      <div className="mt-8 p-3 bg-gradient-to-r from-blue-50 to-violet-50 border border-blue-100 rounded-lg text-center">
         <p className="text-xs text-gray-600">
-          <span className="font-mono font-bold">Demo Mode:</span> Enter any email/password to continue
+          <span className="font-semibold text-blue-600">Demo Mode:</span> Enter any email/password to continue
         </p>
       </div>
     </Card>

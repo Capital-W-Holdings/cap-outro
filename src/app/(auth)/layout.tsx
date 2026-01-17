@@ -6,28 +6,34 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-violet-50 flex flex-col">
+      {/* Decorative background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-violet-200/30 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-blue-200/30 to-transparent rounded-full blur-3xl" />
+      </div>
+
       {/* Header */}
-      <header className="p-6">
-        <Link href="/" className="flex items-center gap-2 w-fit">
-          <div className="w-8 h-8 rounded bg-black flex items-center justify-center">
-            <span className="font-mono text-white text-xs font-bold">CO</span>
+      <header className="relative p-6">
+        <Link href="/" className="flex items-center gap-3 w-fit">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <span className="text-white text-sm font-bold">CO</span>
           </div>
-          <span className="font-mono text-xl font-bold text-black tracking-tight">
-            CAP OUTRO
+          <span className="text-xl font-semibold text-gray-900 tracking-tight">
+            Cap Outro
           </span>
         </Link>
       </header>
 
       {/* Content */}
-      <main className="flex-1 flex items-center justify-center p-6">
+      <main className="relative flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           {children}
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="p-6 text-center text-sm text-gray-500">
+      <footer className="relative p-6 text-center text-sm text-gray-500">
         © {new Date().getFullYear()} Cap Outro. All rights reserved.
       </footer>
     </div>

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Zap, Target, GitBranch, BarChart3, Kanban, Sparkles, Play } from 'lucide-react';
+import { ArrowRight, Zap, Target, GitBranch, BarChart3, Kanban, Sparkles } from 'lucide-react';
 
 export default function HomePage() {
   return (
@@ -68,13 +68,6 @@ export default function HomePage() {
             >
               Start free trial
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="#demo"
-              className="inline-flex items-center gap-2 text-gray-700 bg-white border border-gray-200 px-8 py-4 rounded-full font-semibold text-lg hover:border-gray-300 hover:shadow-lg transition-all"
-            >
-              <Play className="w-5 h-5 text-violet-600" />
-              Watch demo
             </Link>
           </div>
         </div>
