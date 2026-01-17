@@ -10,6 +10,7 @@ interface InvestorListProps {
   filters?: InvestorFilters;
   onAddInvestor: () => void;
   onSelectInvestor?: (investor: Investor) => void;
+  onToggleSelect?: (investor: Investor) => void;
   onViewInvestor?: (investor: Investor) => void;
   selectedIds?: string[];
   selectable?: boolean;
@@ -19,6 +20,7 @@ export function InvestorList({
   filters = {},
   onAddInvestor,
   onSelectInvestor,
+  onToggleSelect,
   onViewInvestor,
   selectedIds = [],
   selectable = false,
@@ -86,8 +88,10 @@ export function InvestorList({
           <InvestorCard
             key={investor.id}
             investor={investor}
-            onSelect={selectable ? onSelectInvestor : onViewInvestor}
+            onSelect={onViewInvestor}
+            onToggleSelect={onToggleSelect}
             selected={selectedIds.includes(investor.id)}
+            selectable={selectable}
           />
         ))}
       </div>

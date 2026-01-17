@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from '@/lib/supabase/server';
 
 // 1x1 transparent GIF
 const TRACKING_PIXEL = Buffer.from(
@@ -10,19 +11,29 @@ export async function GET(request: NextRequest) {
   const trackingId = request.nextUrl.searchParams.get('id');
 
   if (trackingId) {
-    // TODO: Update outreach record with open timestamp
-    // In production:
-    // const supabase = createServiceClient();
-    // await supabase
-    //   .from('outreach')
-    //   .update({ 
-    //     status: 'opened',
-    //     opened_at: new Date().toISOString() 
-    //   })
-    //   .eq('tracking_id', trackingId)
-    //   .is('opened_at', null); // Only update if not already opened
+    try {
+      const supabase = createServiceClient();
 
-    console.log(`📬 Email opened: ${trackingId}`);
+      // Update outreach record with open timestamp
+      // Only update to 'opened' if current status is 'sent'
+      // Don't downgrade from 'clicked' or 'replied'
+      const { error } = await supabase
+        .from('outreach')
+        .update({
+          status: 'opened',
+          opened_at: new Date().toISOString(),
+        })
+        .eq('id', trackingId)
+        .eq('status', 'sent'); // Only update if still in 'sent' status
+
+      if (error) {
+        console.error('Error updating open tracking:', error);
+      } else {
+        console.log(`Email opened: ${trackingId}`);
+      }
+    } catch (err) {
+      console.error('Tracking error:', err);
+    }
   }
 
   // Return tracking pixel

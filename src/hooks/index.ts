@@ -8,3 +8,4 @@ export * from './use-templates';
 export * from './use-settings';
 export * from './use-email-accounts';
 export * from './use-notifications';
+export * from './use-enrollments';

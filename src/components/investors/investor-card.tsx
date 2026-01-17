@@ -1,17 +1,19 @@
 'use client';
 
-import { Building2, Mail, Linkedin, TrendingUp, MoreHorizontal } from 'lucide-react';
+import { Building2, Mail, Linkedin, TrendingUp, MoreHorizontal, Check } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import type { Investor } from '@/types';
 
 interface InvestorCardProps {
   investor: Investor;
   onSelect?: (investor: Investor) => void;
+  onToggleSelect?: (investor: Investor) => void;
   onMenuClick?: (investor: Investor) => void;
   selected?: boolean;
+  selectable?: boolean;
 }
 
-export function InvestorCard({ investor, onSelect, onMenuClick, selected }: InvestorCardProps) {
+export function InvestorCard({ investor, onSelect, onToggleSelect, onMenuClick, selected, selectable }: InvestorCardProps) {
   const checkSize = investor.check_size_min && investor.check_size_max
     ? `$${(investor.check_size_min / 1000).toFixed(0)}K - $${(investor.check_size_max / 1000000).toFixed(1)}M`
     : investor.check_size_min
@@ -24,18 +26,39 @@ export function InvestorCard({ investor, onSelect, onMenuClick, selected }: Inve
     (investor.fit_score ?? 0) >= 40 ? 'text-orange-500' :
     'text-gray-400';
 
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleSelect?.(investor);
+  };
+
   return (
     <Card
       hover
       className={`
         cursor-pointer transition-all
-        ${selected ? 'ring-2 ring-black border-black' : ''}
+        ${selected ? 'ring-2 ring-black border-black bg-gray-50' : ''}
       `}
-      onClick={() => onSelect?.(investor)}
+      onClick={() => selectable ? onToggleSelect?.(investor) : onSelect?.(investor)}
     >
       <div className="flex items-start justify-between">
         {/* Left: Info */}
         <div className="flex items-start gap-3">
+          {/* Selection Checkbox */}
+          {selectable && (
+            <button
+              onClick={handleCheckboxClick}
+              className={`
+                w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-2.5 transition-colors
+                ${selected
+                  ? 'bg-black border-black text-white'
+                  : 'border-gray-300 hover:border-gray-400'
+                }
+              `}
+            >
+              {selected && <Check className="w-3 h-3" />}
+            </button>
+          )}
+
           {/* Avatar */}
           <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-semibold">
             {investor.name.charAt(0).toUpperCase()}

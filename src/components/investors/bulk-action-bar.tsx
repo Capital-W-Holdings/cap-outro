@@ -1,12 +1,13 @@
 'use client';
 
-import { X, Mail, UserPlus, Trash2, Tag } from 'lucide-react';
+import { X, Mail, UserPlus, Trash2, Tag, GitBranch } from 'lucide-react';
 import { Button } from '@/components/ui';
 
 interface BulkActionBarProps {
   selectedCount: number;
   onClearSelection: () => void;
   onAddToCampaign?: () => void;
+  onAddToSequence?: () => void;
   onSendEmail?: () => void;
   onAddTag?: () => void;
   onDelete?: () => void;
@@ -16,6 +17,7 @@ export function BulkActionBar({
   selectedCount,
   onClearSelection,
   onAddToCampaign,
+  onAddToSequence,
   onSendEmail,
   onAddTag,
   onDelete,
@@ -50,7 +52,18 @@ export function BulkActionBar({
               Add to Campaign
             </Button>
           )}
-          
+
+          {onAddToSequence && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onAddToSequence}
+              leftIcon={<GitBranch className="w-4 h-4" />}
+            >
+              Add to Sequence
+            </Button>
+          )}
+
           {onSendEmail && (
             <Button
               variant="secondary"

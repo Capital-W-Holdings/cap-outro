@@ -206,6 +206,7 @@ export interface Outreach {
   investor_id: string;
   sequence_id: string | null;
   step_id: string | null;
+  enrollment_id: string | null;
   type: OutreachType;
   status: OutreachStatus;
   scheduled_at: string | null;
@@ -215,6 +216,34 @@ export interface Outreach {
   content: string;
   subject: string | null;
   created_at: string;
+}
+
+// Sequence Enrollment
+export type EnrollmentStatus = 'active' | 'paused' | 'completed' | 'cancelled';
+
+export interface SequenceEnrollment {
+  id: string;
+  sequence_id: string;
+  investor_id: string;
+  campaign_id: string | null;
+  org_id: string;
+  status: EnrollmentStatus;
+  current_step_order: number;
+  next_send_at: string | null;
+  enrolled_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  // Optional joined data
+  investor?: {
+    id: string;
+    name: string;
+    email: string | null;
+    firm: string | null;
+  };
+  sequence?: {
+    id: string;
+    name: string;
+  };
 }
 
 // Pipeline

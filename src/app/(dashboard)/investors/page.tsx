@@ -2,8 +2,10 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { Header } from '@/components/layout';
-import { InvestorList, ImportInvestorsModal, InvestorDetailModal, InvestorEditModal } from '@/components/investors';
+import { InvestorList, ImportInvestorsModal, InvestorDetailModal, InvestorEditModal, BulkActionBar } from '@/components/investors';
 import { InvestorFiltersBar, ActiveFilterChips } from '@/components/investors/investor-filters';
+import { Modal, ModalFooter, Button, Select } from '@/components/ui';
+import { useSequences } from '@/hooks';
 import type { InvestorFilters } from '@/hooks/use-investors';
 import type { Investor } from '@/types';
 
@@ -12,6 +14,16 @@ export default function InvestorsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<InvestorFilters>({});
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Selection state for bulk actions
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+
+  // Sequence enrollment modal state
+  const [isSequenceModalOpen, setIsSequenceModalOpen] = useState(false);
+  const [selectedSequenceId, setSelectedSequenceId] = useState('');
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const { data: sequences } = useSequences();
 
   // Modal states
   const [selectedInvestor, setSelectedInvestor] = useState<Investor | null>(null);
@@ -72,6 +84,72 @@ export default function InvestorsPage() {
     setFilters(newFilters);
   }, []);
 
+  // Selection handlers
+  const handleToggleSelect = useCallback((investor: Investor) => {
+    setSelectedIds(prev => {
+      if (prev.includes(investor.id)) {
+        return prev.filter(id => id !== investor.id);
+      }
+      return [...prev, investor.id];
+    });
+    if (!isSelectionMode) {
+      setIsSelectionMode(true);
+    }
+  }, [isSelectionMode]);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedIds([]);
+    setIsSelectionMode(false);
+  }, []);
+
+  const handleAddToSequence = useCallback(() => {
+    setIsSequenceModalOpen(true);
+  }, []);
+
+  const handleEnrollInSequence = async () => {
+    if (!selectedSequenceId || selectedIds.length === 0) return;
+
+    setIsEnrolling(true);
+    try {
+      const response = await fetch(`/api/sequences/${selectedSequenceId}/enroll`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ investor_ids: selectedIds }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to enroll investors');
+      }
+
+      const result = await response.json();
+      console.log('Enrolled:', result);
+
+      // Clear selection and close modal
+      setIsSequenceModalOpen(false);
+      setSelectedSequenceId('');
+      setSelectedIds([]);
+      setIsSelectionMode(false);
+    } catch (err) {
+      console.error('Error enrolling investors:', err);
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
+
+  // Sequence options for dropdown
+  const sequenceOptions = useMemo(() => {
+    const options = [{ value: '', label: 'Select a sequence...' }];
+    if (sequences) {
+      sequences.forEach(seq => {
+        options.push({
+          value: seq.id,
+          label: `${seq.name} (${seq.status})`,
+        });
+      });
+    }
+    return options;
+  }, [sequences]);
+
   return (
     <div className="flex flex-col h-full">
       <Header
@@ -98,8 +176,18 @@ export default function InvestorsPage() {
           filters={combinedFilters}
           onAddInvestor={handleAddInvestor}
           onViewInvestor={handleViewInvestor}
+          onToggleSelect={handleToggleSelect}
+          selectedIds={selectedIds}
+          selectable={true}
         />
       </div>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        selectedCount={selectedIds.length}
+        onClearSelection={handleClearSelection}
+        onAddToSequence={handleAddToSequence}
+      />
 
       {/* Import Modal */}
       <ImportInvestorsModal
@@ -125,6 +213,47 @@ export default function InvestorsPage() {
           onSuccess={handleEditSuccess}
         />
       )}
+
+      {/* Add to Sequence Modal */}
+      <Modal
+        isOpen={isSequenceModalOpen}
+        onClose={() => setIsSequenceModalOpen(false)}
+        title="Add to Sequence"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Enroll {selectedIds.length} investor{selectedIds.length !== 1 ? 's' : ''} in an outreach sequence.
+          </p>
+
+          <Select
+            label="Select Sequence"
+            options={sequenceOptions}
+            value={selectedSequenceId}
+            onChange={(e) => setSelectedSequenceId(e.target.value)}
+          />
+
+          {selectedSequenceId && (
+            <p className="text-sm text-gray-500">
+              Investors will be enrolled and will start receiving outreach based on the sequence steps.
+            </p>
+          )}
+        </div>
+
+        <ModalFooter>
+          <Button variant="ghost" onClick={() => setIsSequenceModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleEnrollInSequence}
+            isLoading={isEnrolling}
+            disabled={!selectedSequenceId}
+          >
+            Enroll Investors
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 }

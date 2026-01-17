@@ -27,6 +27,13 @@ export class NotFoundError extends AppError {
   }
 }
 
+export class BadRequestError extends AppError {
+  constructor(message: string) {
+    super('VALIDATION_ERROR', message);
+    this.name = 'BadRequestError';
+  }
+}
+
 export class UnauthorizedError extends AppError {
   constructor(message = 'Unauthorized') {
     super('UNAUTHORIZED', message);
