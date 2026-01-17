@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -15,7 +15,11 @@ interface ModalProps {
 export function Modal({ isOpen, onClose, title, children, size = 'md', description }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
-  
+  const onCloseRef = useRef(onClose);
+
+  // Keep onClose ref updated
+  onCloseRef.current = onClose;
+
   const sizeClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -23,62 +27,59 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', descripti
     xl: 'max-w-4xl',
   };
 
-  // Handle escape key
-  const handleEscape = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    },
-    [onClose]
-  );
+  useEffect(() => {
+    if (!isOpen) return;
 
-  // Focus trap
-  const handleTab = useCallback((e: KeyboardEvent) => {
-    if (e.key !== 'Tab' || !modalRef.current) return;
+    // Save current focus only on open
+    previousActiveElement.current = document.activeElement as HTMLElement;
 
-    const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+    // Focus first focusable element only on initial open
+    const firstFocusable = modalRef.current?.querySelector<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
+    setTimeout(() => firstFocusable?.focus(), 0);
 
-    if (e.shiftKey && document.activeElement === firstElement) {
-      e.preventDefault();
-      lastElement?.focus();
-    } else if (!e.shiftKey && document.activeElement === lastElement) {
-      e.preventDefault();
-      firstElement?.focus();
-    }
-  }, []);
+    // Handle escape key
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCloseRef.current();
+      }
+    };
 
-  useEffect(() => {
-    if (isOpen) {
-      // Save current focus
-      previousActiveElement.current = document.activeElement as HTMLElement;
-      
-      // Focus first focusable element
-      const firstFocusable = modalRef.current?.querySelector<HTMLElement>(
+    // Focus trap
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !modalRef.current) return;
+
+      const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
-      setTimeout(() => firstFocusable?.focus(), 0);
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
 
-      document.addEventListener('keydown', handleEscape);
-      document.addEventListener('keydown', handleTab);
-      document.body.style.overflow = 'hidden';
-    }
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement?.focus();
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleTab);
+    document.body.style.overflow = 'hidden';
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.removeEventListener('keydown', handleTab);
       document.body.style.overflow = 'unset';
-      
+
       // Restore focus
-      if (!isOpen && previousActiveElement.current) {
+      if (previousActiveElement.current) {
         previousActiveElement.current.focus();
       }
     };
-  }, [isOpen, handleEscape, handleTab]);
+  }, [isOpen]); // Only depend on isOpen, not on callbacks
 
   if (!isOpen) return null;
 
