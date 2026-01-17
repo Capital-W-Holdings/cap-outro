@@ -8,6 +8,7 @@ import { validateCreateInvestor } from '@/lib/api/validators';
 import { createServiceClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth/utils';
 import { logInvestorCreated } from '@/lib/activity';
+import { demoInvestors } from '@/lib/demo/investors';
 import type { Investor } from '@/types';
 
 // GET /api/investors - List all investors with filtering
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const investors: Investor[] = (data ?? []).map((row: any) => ({
+    const dbInvestors: Investor[] = (data ?? []).map((row: any) => ({
       id: row.id,
       org_id: row.org_id,
       user_id: row.user_id,
@@ -124,10 +125,28 @@ export async function GET(request: NextRequest) {
       created_at: row.created_at,
     }));
 
-    return successResponse(investors, {
+    // Include demo mode investors
+    const demoInvestorsList = Array.from(demoInvestors.values());
+
+    // Filter demo investors by search if needed
+    let filteredDemoInvestors = demoInvestorsList;
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredDemoInvestors = demoInvestorsList.filter(inv =>
+        inv.name.toLowerCase().includes(searchLower) ||
+        inv.firm?.toLowerCase().includes(searchLower) ||
+        inv.email?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Combine DB investors with demo investors
+    const allInvestors = [...dbInvestors, ...filteredDemoInvestors];
+    const totalCount = (count ?? 0) + filteredDemoInvestors.length;
+
+    return successResponse(allInvestors, {
       page,
       limit,
-      total: count ?? 0,
+      total: totalCount,
     });
   });
 }
@@ -137,6 +156,7 @@ export async function POST(request: NextRequest) {
   return withErrorHandling(async () => {
     // Get authenticated user
     const user = await requireAuth();
+    const isDemoMode = user.id === 'demo-user-id';
 
     const body = await parseBody(request, validateCreateInvestor);
     const supabase = createServiceClient();
@@ -163,6 +183,33 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Supabase error:', error);
+
+      // Fallback to demo mode
+      if (isDemoMode) {
+        const newInvestor: Investor = {
+          id: `demo-inv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          org_id: user.orgId,
+          user_id: user.id,
+          is_platform: false,
+          name: body.name,
+          email: body.email || null,
+          firm: body.firm ?? null,
+          title: body.title ?? null,
+          linkedin_url: body.linkedin_url || null,
+          check_size_min: body.check_size_min ?? null,
+          check_size_max: body.check_size_max ?? null,
+          stages: body.stages ?? [],
+          sectors: body.sectors ?? [],
+          fit_score: null,
+          warm_paths: [],
+          source: 'manual',
+          created_at: new Date().toISOString(),
+        };
+
+        demoInvestors.set(newInvestor.id, newInvestor);
+        return successResponse(newInvestor);
+      }
+
       throw new Error('Failed to create investor');
     }
 

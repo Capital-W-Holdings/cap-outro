@@ -9,12 +9,15 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth/utils';
 import { normalizeLinkedInUrl, isValidEmail } from '@/lib/enrichment';
 import { logBulkInvestorImport } from '@/lib/activity';
+import { demoInvestors } from '@/lib/demo/investors';
+import type { Investor } from '@/types';
 
 // POST /api/investors/bulk - Bulk import investors
 export async function POST(request: NextRequest) {
   return withErrorHandling(async () => {
     // Get authenticated user
     const user = await requireAuth();
+    const isDemoMode = user.id === 'demo-user-id';
 
     const body = await parseBody(request, validateBulkImport);
     const supabase = createServiceClient();
@@ -74,6 +77,43 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         console.error('Supabase bulk insert error:', error);
+
+        // If in demo mode, store in memory instead
+        if (isDemoMode) {
+          const importedInvestors: Investor[] = [];
+
+          for (const inv of toInsert) {
+            const newInvestor: Investor = {
+              id: `demo-inv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              org_id: inv.org_id,
+              user_id: inv.user_id,
+              is_platform: inv.is_platform,
+              name: inv.name,
+              email: inv.email,
+              firm: inv.firm,
+              title: inv.title,
+              linkedin_url: inv.linkedin_url,
+              check_size_min: inv.check_size_min,
+              check_size_max: inv.check_size_max,
+              stages: inv.stages,
+              sectors: inv.sectors,
+              fit_score: null,
+              warm_paths: [],
+              source: inv.source as 'import' | 'enrichment' | 'manual',
+              created_at: new Date().toISOString(),
+            };
+
+            demoInvestors.set(newInvestor.id, newInvestor);
+            importedInvestors.push(newInvestor);
+          }
+
+          return successResponse({
+            imported: importedInvestors.length,
+            errors: 0,
+            errorDetails: undefined,
+          });
+        }
+
         // Try inserting one by one to identify problematic records
         let successCount = 0;
         const successfulInvestors: Array<{ id: string; name: string }> = [];
