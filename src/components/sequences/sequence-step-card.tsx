@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, Linkedin, ClipboardList, Clock, GripVertical, Trash2, Edit } from 'lucide-react';
+import { Mail, Linkedin, ClipboardList, Clock, GripVertical, Trash2, Edit, FileText } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import type { SequenceStep, StepType } from '@/types';
 
@@ -40,7 +40,7 @@ export function SequenceStepCard({ step, index, onEdit, onDelete }: SequenceStep
     <Card className="group relative">
       <div className="flex items-start gap-4">
         {/* Drag Handle */}
-        <div className="flex-shrink-0 cursor-grab text-gray-600 hover:text-gray-400">
+        <div className="flex-shrink-0 cursor-grab text-gray-400 hover:text-gray-600">
           <GripVertical className="w-5 h-5" />
         </div>
 
@@ -67,25 +67,34 @@ export function SequenceStepCard({ step, index, onEdit, onDelete }: SequenceStep
                 </span>
               </>
             )}
+            {step.template_id && (
+              <>
+                <span className="text-xs text-gray-600">•</span>
+                <span className="text-xs text-green-500 flex items-center gap-1">
+                  <FileText className="w-3 h-3" />
+                  Template
+                </span>
+              </>
+            )}
           </div>
 
           {step.type === 'email' && (
             <>
               {step.subject && (
-                <p className="text-sm font-medium text-white truncate">{step.subject}</p>
+                <p className="text-sm font-medium text-gray-900 truncate">{step.subject}</p>
               )}
               {step.content && (
-                <p className="text-sm text-gray-400 mt-1 line-clamp-2">{step.content}</p>
+                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{step.content}</p>
               )}
             </>
           )}
 
           {step.type === 'linkedin' && step.content && (
-            <p className="text-sm text-gray-400 line-clamp-2">{step.content}</p>
+            <p className="text-sm text-gray-500 line-clamp-2">{step.content}</p>
           )}
 
           {step.type === 'task' && step.content && (
-            <p className="text-sm text-gray-400">{step.content}</p>
+            <p className="text-sm text-gray-500">{step.content}</p>
           )}
 
           {step.type === 'wait' && (
@@ -100,7 +109,7 @@ export function SequenceStepCard({ step, index, onEdit, onDelete }: SequenceStep
           {onEdit && (
             <button
               onClick={() => onEdit(step)}
-              className="p-2 text-gray-500 hover:text-white hover:bg-dark-600 rounded transition-colors"
+              className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
             >
               <Edit className="w-4 h-4" />
             </button>
@@ -108,7 +117,7 @@ export function SequenceStepCard({ step, index, onEdit, onDelete }: SequenceStep
           {onDelete && (
             <button
               onClick={() => onDelete(step)}
-              className="p-2 text-gray-500 hover:text-red-400 hover:bg-dark-600 rounded transition-colors"
+              className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
             >
               <Trash2 className="w-4 h-4" />
             </button>

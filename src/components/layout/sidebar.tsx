@@ -22,8 +22,8 @@ const navItems = [
   { href: '/campaigns', label: 'Campaigns', icon: LayoutDashboard },
   { href: '/investors', label: 'Investors', icon: Users },
   { href: '/pipeline', label: 'Pipeline', icon: Kanban },
-  { href: '/sequences', label: 'Sequences', icon: GitBranch },
   { href: '/templates', label: 'Templates', icon: FileText },
+  { href: '/sequences', label: 'Sequences', icon: GitBranch },
   { href: '/outreach', label: 'Outreach', icon: Mail },
 ];
 

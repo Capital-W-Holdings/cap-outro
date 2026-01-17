@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { Plus, Play, Pause, Settings } from 'lucide-react';
-import { useSequence, useUpdateSequence, useAddSequenceStep } from '@/hooks';
+import { useState, useCallback, useMemo } from 'react';
+import { Plus, Play, Pause, Settings, FileText } from 'lucide-react';
+import { useSequence, useUpdateSequence, useAddSequenceStep, useTemplates } from '@/hooks';
 import { SequenceStepCard } from './sequence-step-card';
 import { Button, LoadingPage, ErrorState, EmptyState, Modal, ModalFooter, Input, Select } from '@/components/ui';
-import type { SequenceStep, StepType, SequenceStatus } from '@/types';
+import type { SequenceStep, StepType, SequenceStatus, EmailTemplate } from '@/types';
 
 interface SequenceBuilderProps {
   sequenceId: string;
@@ -22,6 +22,7 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
   const { data: sequence, isLoading, error, refetch } = useSequence(sequenceId);
   const { mutate: updateSequence, isLoading: isUpdating } = useUpdateSequence(sequenceId);
   const { mutate: addStep, isLoading: isAddingStep } = useAddSequenceStep(sequenceId);
+  const { data: templates } = useTemplates();
 
   // Add step modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -29,6 +30,7 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
   const [newStepDelay, setNewStepDelay] = useState('0');
   const [newStepSubject, setNewStepSubject] = useState('');
   const [newStepContent, setNewStepContent] = useState('');
+  const [newStepTemplateId, setNewStepTemplateId] = useState<string>('');
 
   // Edit step modal state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -37,12 +39,64 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
   const [editStepDelay, setEditStepDelay] = useState('0');
   const [editStepSubject, setEditStepSubject] = useState('');
   const [editStepContent, setEditStepContent] = useState('');
+  const [editStepTemplateId, setEditStepTemplateId] = useState<string>('');
   const [isEditingSaving, setIsEditingSaving] = useState(false);
 
   // Delete confirmation state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingStep, setDeletingStep] = useState<SequenceStep | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Template options for dropdown
+  const templateOptions = useMemo(() => {
+    const options = [{ value: '', label: 'Write custom content' }];
+    if (templates) {
+      templates.forEach((t: EmailTemplate) => {
+        options.push({ value: t.id, label: t.name });
+      });
+    }
+    return options;
+  }, [templates]);
+
+  // Handle template selection for new step
+  const handleNewTemplateSelect = useCallback((templateId: string) => {
+    setNewStepTemplateId(templateId);
+    if (templateId && templates) {
+      const template = templates.find((t: EmailTemplate) => t.id === templateId);
+      if (template) {
+        setNewStepSubject(template.subject);
+        setNewStepContent(template.body);
+      }
+    }
+  }, [templates]);
+
+  // Handle template selection for edit step
+  const handleEditTemplateSelect = useCallback((templateId: string) => {
+    setEditStepTemplateId(templateId);
+    if (templateId && templates) {
+      const template = templates.find((t: EmailTemplate) => t.id === templateId);
+      if (template) {
+        setEditStepSubject(template.subject);
+        setEditStepContent(template.body);
+      }
+    }
+  }, [templates]);
+
+  // Callbacks must be defined before early returns (React hooks rules)
+  const handleEditStep = useCallback((step: SequenceStep) => {
+    setEditingStep(step);
+    setEditStepType(step.type);
+    setEditStepDelay(String(step.delay_days || 0));
+    setEditStepSubject(step.subject || '');
+    setEditStepContent(step.content || '');
+    setEditStepTemplateId(step.template_id || '');
+    setIsEditModalOpen(true);
+  }, []);
+
+  const handleDeleteStep = useCallback((step: SequenceStep) => {
+    setDeletingStep(step);
+    setIsDeleteModalOpen(true);
+  }, []);
 
   if (isLoading) return <LoadingPage />;
   if (error) return <ErrorState error={error} onRetry={refetch} />;
@@ -68,6 +122,7 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
         delay_days: parseInt(newStepDelay, 10) || 0,
         subject: newStepSubject || undefined,
         content: newStepContent || undefined,
+        template_id: newStepTemplateId || undefined,
       });
 
       // Reset form
@@ -75,21 +130,13 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
       setNewStepDelay('0');
       setNewStepSubject('');
       setNewStepContent('');
+      setNewStepTemplateId('');
       setIsAddModalOpen(false);
       refetch();
     } catch {
       // Error handled by hook
     }
   };
-
-  const handleEditStep = useCallback((step: SequenceStep) => {
-    setEditingStep(step);
-    setEditStepType(step.type);
-    setEditStepDelay(String(step.delay_days || 0));
-    setEditStepSubject(step.subject || '');
-    setEditStepContent(step.content || '');
-    setIsEditModalOpen(true);
-  }, []);
 
   const handleSaveEdit = async () => {
     if (!editingStep) return;
@@ -104,6 +151,7 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
           delay_days: parseInt(editStepDelay, 10) || 0,
           subject: editStepSubject || null,
           content: editStepContent || null,
+          template_id: editStepTemplateId || null,
         }),
       });
 
@@ -113,6 +161,7 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
 
       setIsEditModalOpen(false);
       setEditingStep(null);
+      setEditStepTemplateId('');
       refetch();
     } catch (err) {
       console.error('Error updating step:', err);
@@ -120,11 +169,6 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
       setIsEditingSaving(false);
     }
   };
-
-  const handleDeleteStep = useCallback((step: SequenceStep) => {
-    setDeletingStep(step);
-    setIsDeleteModalOpen(true);
-  }, []);
 
   const handleConfirmDelete = async () => {
     if (!deletingStep) return;
@@ -234,12 +278,28 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
           />
 
           {(newStepType === 'email') && (
-            <Input
-              label="Subject"
-              placeholder="Email subject line"
-              value={newStepSubject}
-              onChange={(e) => setNewStepSubject(e.target.value)}
-            />
+            <>
+              <div>
+                <Select
+                  label="Use Template"
+                  options={templateOptions}
+                  value={newStepTemplateId}
+                  onChange={(e) => handleNewTemplateSelect(e.target.value)}
+                />
+                {newStepTemplateId && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <FileText className="w-3 h-3" />
+                    Template content loaded. You can customize below.
+                  </p>
+                )}
+              </div>
+              <Input
+                label="Subject"
+                placeholder="Email subject line"
+                value={newStepSubject}
+                onChange={(e) => setNewStepSubject(e.target.value)}
+              />
+            </>
           )}
 
           {(newStepType === 'email' || newStepType === 'linkedin' || newStepType === 'task') && (
@@ -258,6 +318,11 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
                 value={newStepContent}
                 onChange={(e) => setNewStepContent(e.target.value)}
               />
+              {newStepType === 'email' && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Available variables: {'{{investor_name}}'}, {'{{investor_firm}}'}, {'{{founder_name}}'}, {'{{company_name}}'}
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -297,12 +362,28 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
           />
 
           {(editStepType === 'email') && (
-            <Input
-              label="Subject"
-              placeholder="Email subject line"
-              value={editStepSubject}
-              onChange={(e) => setEditStepSubject(e.target.value)}
-            />
+            <>
+              <div>
+                <Select
+                  label="Use Template"
+                  options={templateOptions}
+                  value={editStepTemplateId}
+                  onChange={(e) => handleEditTemplateSelect(e.target.value)}
+                />
+                {editStepTemplateId && (
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <FileText className="w-3 h-3" />
+                    Template linked. Customize content below if needed.
+                  </p>
+                )}
+              </div>
+              <Input
+                label="Subject"
+                placeholder="Email subject line"
+                value={editStepSubject}
+                onChange={(e) => setEditStepSubject(e.target.value)}
+              />
+            </>
           )}
 
           {(editStepType === 'email' || editStepType === 'linkedin' || editStepType === 'task') && (
@@ -321,6 +402,11 @@ export function SequenceBuilder({ sequenceId }: SequenceBuilderProps) {
                 value={editStepContent}
                 onChange={(e) => setEditStepContent(e.target.value)}
               />
+              {editStepType === 'email' && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Available variables: {'{{investor_name}}'}, {'{{investor_firm}}'}, {'{{founder_name}}'}, {'{{company_name}}'}
+                </p>
+              )}
             </div>
           )}
         </div>
