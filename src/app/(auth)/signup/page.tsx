@@ -19,13 +19,33 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      // Basic validation
-      if (password.length < 8) {
-        throw new Error('Password must be at least 8 characters');
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to sign up');
       }
 
-      // Demo mode - just redirect to dashboard
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Auto-login after signup
+      const loginResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const loginData = await loginResponse.json();
+
+      if (!loginData.success) {
+        // Signup succeeded but login failed - redirect to login page
+        router.push('/login?message=Account created. Please sign in.');
+        return;
+      }
+
       router.push('/investors');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign up');
@@ -94,12 +114,6 @@ export default function SignupPage() {
         </Link>
       </div>
 
-      {/* Demo notice */}
-      <div className="mt-8 p-3 bg-gradient-to-r from-blue-50 to-violet-50 border border-blue-100 rounded-lg text-center">
-        <p className="text-xs text-gray-600">
-          <span className="font-semibold text-blue-600">Demo Mode:</span> Enter any details to continue
-        </p>
-      </div>
     </Card>
   );
 }

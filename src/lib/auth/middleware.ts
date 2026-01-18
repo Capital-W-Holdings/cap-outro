@@ -9,8 +9,7 @@ export async function updateSession(request: NextRequest) {
   });
 
   // Demo mode - allow all requests through without authentication
-  // Remove this block to enable real authentication
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || true; // Default to demo
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
   if (isDemoMode) {
     return response;
   }
@@ -53,7 +52,7 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   // Protected routes
-  const protectedPaths = ['/campaigns', '/investors', '/pipeline', '/sequences', '/outreach', '/settings'];
+  const protectedPaths = ['/campaigns', '/investors', '/pipeline', '/sequences', '/outreach', '/settings', '/templates', '/help', '/support'];
   const isProtectedPath = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );

@@ -13,7 +13,7 @@ export interface AuthUser {
 const DEMO_USER: AuthUser = {
   id: 'demo-user-id',
   email: 'demo@capoutro.com',
-  orgId: 'demo-org-id',
+  orgId: '00000000-0000-0000-0000-000000000001',
   role: 'admin',
   name: 'Demo User',
 };
@@ -24,7 +24,7 @@ const DEMO_USER: AuthUser = {
  */
 export async function requireAuth(): Promise<AuthUser> {
   // Demo mode - return demo user
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || true;
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
   if (isDemoMode) {
     return DEMO_USER;
   }

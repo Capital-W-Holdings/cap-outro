@@ -18,8 +18,18 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Demo mode - just redirect to dashboard
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to sign in');
+      }
+
       router.push('/investors');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in');
@@ -77,12 +87,6 @@ export default function LoginPage() {
         </Link>
       </div>
 
-      {/* Demo notice */}
-      <div className="mt-8 p-3 bg-gradient-to-r from-blue-50 to-violet-50 border border-blue-100 rounded-lg text-center">
-        <p className="text-xs text-gray-600">
-          <span className="font-semibold text-blue-600">Demo Mode:</span> Enter any email/password to continue
-        </p>
-      </div>
     </Card>
   );
 }
