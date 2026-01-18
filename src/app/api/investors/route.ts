@@ -32,16 +32,24 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sort_by') ?? 'created_at';
     const sortOrder = searchParams.get('sort_order') ?? 'desc';
 
-    const supabase = createServiceClient();
+    let supabase;
+    try {
+      supabase = createServiceClient();
+    } catch (e) {
+      console.error('Failed to create service client:', e);
+      throw new Error('Database connection not available');
+    }
 
-    // Build query - show all investors in demo mode
-    const isDemoMode = user.id === 'demo-user-id';
+    // Build query - show platform investors + user's own investors
     let query = supabase
       .from('investors')
       .select('*', { count: 'exact' });
 
-    // In demo mode, show all investors; otherwise filter by user
+    // Show platform investors (is_platform=true) OR user's own investors (user_id matches)
+    // For demo mode, show all investors
+    const isDemoMode = user.id === 'demo-user-id';
     if (!isDemoMode) {
+      // Use filter that shows platform investors OR user's own
       query = query.or(`is_platform.eq.true,user_id.eq.${user.id}`);
     }
 
