@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient, createServiceClient } from '@/lib/supabase/server';
 import { UnauthorizedError } from '@/lib/api/utils';
 
 export interface AuthUser {
@@ -37,14 +37,16 @@ export async function requireAuth(): Promise<AuthUser> {
     throw new UnauthorizedError('Not authenticated');
   }
 
-  // Get user profile with org info
-  const { data: profile, error: profileError } = await supabase
+  // Use service client to bypass RLS for profile lookup
+  const serviceClient = createServiceClient();
+  const { data: profile, error: profileError } = await serviceClient
     .from('users')
     .select('org_id, role, name')
     .eq('id', user.id)
     .single();
 
   if (profileError || !profile) {
+    console.error('Profile lookup error:', profileError);
     throw new UnauthorizedError('User profile not found');
   }
 
